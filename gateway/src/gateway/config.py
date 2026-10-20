@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     keycloak_status_client_id: str = "gateway-status"
     keycloak_status_client_secret: SecretStr
     gateway_credential_ttl_seconds: int = 28800
+    provision_inference_on_login: bool = True
     authz_max_staleness_seconds: int = 30
     provider_mode: str = "openai-compatible"
     provider_credential_mode: str = "static"
@@ -99,6 +100,13 @@ class Settings(BaseSettings):
     request_timeout_seconds: int = 120
     worker_interval_seconds: float = 2
     tls_ca_bundle: str = ""
+    jira_base_url: str = ""
+    confluence_base_url: str = ""
+    mcp_setup_ttl_seconds: int = 600
+    mcp_timeout_seconds: float = 15
+    mcp_request_rate: int = 120
+    mcp_request_concurrency: int = 4
+    mcp_response_limit: int = 262144
 
     def __init__(self, **values):
         if "_env_file" not in values:
@@ -134,6 +142,19 @@ class Settings(BaseSettings):
         dev = self.profile == "dev"
         self.gateway_public_url = trusted_url(self.gateway_public_url, dev)
         self.oidc_issuer = trusted_url(self.oidc_issuer, dev)
+        for field in ("jira_base_url", "confluence_base_url"):
+            if value := getattr(self, field):
+                # Only operator configuration chooses destinations, never model/user input.
+                u = urlparse(value)
+                internal_dev = dev and u.scheme == "http" and u.hostname == "fake-atlassian" and u.port == 8091
+                normalized = trusted_url(value, dev) if not internal_dev else value.rstrip("/")
+                if (u.username or u.password or u.query or u.fragment or
+                        any(p in {".", ".."} for p in u.path.split("/")) or "%" in u.path):
+                    raise ValueError("invalid Atlassian endpoint")
+                setattr(self, field, normalized)
+        if not 60 <= self.mcp_setup_ttl_seconds <= 900 or min(self.mcp_timeout_seconds,
+                self.mcp_request_rate, self.mcp_request_concurrency, self.mcp_response_limit) <= 0:
+            raise ValueError("invalid MCP limits")
         issuer_origin = "{0.scheme}://{0.netloc}".format(urlparse(self.oidc_issuer))
         for origin in self.oidc_allowed_origins:
             u = urlparse(trusted_url(origin, dev))

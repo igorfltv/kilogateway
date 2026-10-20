@@ -19,7 +19,12 @@ async def main():
     db = DB(s.database_url.get_secret_value(), s.database_schema)
     try:
         async with db.tx() as c:
-            await run(c, "LOCK TABLE provider_credentials,exchange_results IN ACCESS EXCLUSIVE MODE")
+            await run(c, "LOCK TABLE provider_credentials,exchange_results,mcp_credentials IN ACCESS EXCLUSIVE MODE")
+            for row in await rows(c, "SELECT * FROM mcp_credentials"):
+                aad = f"mcp:{row['principal_id']}:{row['system']}:{row['endpoint']}"
+                cipher = new.seal(old.open(row["ciphertext"], aad), aad)
+                await run(c, "UPDATE mcp_credentials SET ciphertext=:cipher WHERE principal_id=:p AND system=:s",
+                          cipher=cipher, p=row["principal_id"], s=row["system"])
             for row in await rows(c, "SELECT * FROM provider_credentials WHERE ciphertext IS NOT NULL"):
                 aad = f"provider:{row['principal_id']}:{row['provider']}:{row['id']}"
                 cipher = new.seal(old.open(row["ciphertext"], aad), aad)

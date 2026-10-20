@@ -11,7 +11,7 @@ export YAI_OPENCODE_BINARY := $(abspath $(OPENCODE_BINARY))
 endif
 
 .PHONY: install dev-secrets up bootstrap keycloak-brand model-policy migrate test test-integration native-smoke plugin-build plugin-test plugin-pack model-check live-smoke active-smoke opencode-smoke opencode-transport-smoke openai-compatible-smoke kubernetes-check kube-tools load-test openapi lint client-config opencode-config release install-kilo install-opencode installer-test standard-cli-smoke
-.PHONY: prepare runtime-secrets
+.PHONY: prepare runtime-secrets mcp-smoke
 prepare:
 	@python3 -c 'from pathlib import Path; p=Path(".local"); p.mkdir(exist_ok=True, mode=0o700); [(Path("artifacts")/d).mkdir(parents=True, exist_ok=True) for d in ("client", "releases", "reports")]'
 install: prepare
@@ -31,9 +31,9 @@ keycloak-brand:
 migrate:
 	.venv/bin/python gateway/scripts/migrate.py
 test:
-	.venv/bin/pytest -c gateway/pyproject.toml -q gateway/tests/test_unit.py gateway/tests/test_oidc.py gateway/tests/test_catalog.py gateway/tests/test_endpoints.py gateway/tests/test_openai_compatible.py gateway/tests/test_runtime.py tools/tests/test_config_init.py
+	.venv/bin/pytest -c gateway/pyproject.toml -q gateway/tests/test_unit.py gateway/tests/test_oidc.py gateway/tests/test_catalog.py gateway/tests/test_endpoints.py gateway/tests/test_openai_compatible.py gateway/tests/test_runtime.py gateway/tests/test_mcp.py tools/tests/test_config_init.py
 test-integration:
-	.venv/bin/pytest -c gateway/pyproject.toml -q gateway/tests/test_integration.py tools/tests/test_real_stack.py
+	.venv/bin/pytest -c gateway/pyproject.toml -q gateway/tests/test_integration.py gateway/tests/test_mcp_integration.py tools/tests/test_real_stack.py
 native-smoke:
 	.venv/bin/python tools/native_smoke.py
 plugin-build:
@@ -62,6 +62,8 @@ opencode-smoke:
 	.venv/bin/python tools/opencode_smoke.py
 opencode-transport-smoke:
 	.venv/bin/python tools/opencode_transport_smoke.py
+mcp-smoke: plugin-build | prepare
+	.venv/bin/python tools/mcp_smoke.py
 openai-compatible-smoke:
 	.venv/bin/python tools/openai_compatible_smoke.py
 kubernetes-check:

@@ -9,6 +9,7 @@ import httpx
 from dotenv import load_dotenv
 
 from tools.device_login import approve
+from tools.mcp_login import complete_setup
 from tools.keycloak_test_user import test_user
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,7 +44,7 @@ async def smoke(username, password, binary=None):
     log = bytearray()
     p = await asyncio.create_subprocess_exec(str(binary), "auth", "login", "--provider", "y.ai",
         cwd=project, env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
-    approved = False
+    approved, mcp_complete = False, False
     print("Native smoke: waiting for actual Kilo Device Flow", flush=True)
     try:
         async with asyncio.timeout(180):
@@ -60,6 +61,10 @@ async def smoke(username, password, binary=None):
                     await approve(match.group(0), username, password)
                     approved = True
                     print("Native smoke: real Keycloak device approved", flush=True)
+                setup = re.search(r"http://(?:localhost|127\.0\.0\.1):[0-9]+/[^\s]*auth/mcp/setup#ms_[\w-]+\.[\w-]+", clean)
+                if setup and not mcp_complete:
+                    await complete_setup(setup.group(0))
+                    mcp_complete = True
             code = await p.wait()
         if code or not approved:
             # Kilo diagnostic logs may contain sensitive request data; retain locally, never print.

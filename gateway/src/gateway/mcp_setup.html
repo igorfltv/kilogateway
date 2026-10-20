@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Y.AI · Подключение Jira и Confluence</title>
+<style>
+:root{font:16px/1.55 system-ui,sans-serif;color:#202b25;background:#f5f4ef}*{box-sizing:border-box}
+body{margin:0;padding:40px 20px}main{max-width:660px;margin:0 auto}.brand{font-size:24px;font-weight:800;letter-spacing:-1px}
+h1{font-size:36px;line-height:1.15;letter-spacing:-1.3px;margin:36px 0 16px}p{color:#59635c}fieldset{border:1px solid #d3d8cf;border-radius:14px;padding:20px 24px;margin:24px 0;background:#fff}
+legend{font-weight:750;padding:0 8px;font-size:20px}label{display:block;margin:8px 0}input,select{font:inherit;width:100%;padding:12px;border:1px solid #adb6ab;border-radius:6px;background:#fff;color:inherit}
+button{font:inherit;font-weight:650;background:#223d2b;color:white;padding:14px 22px;border:0;border-radius:7px;cursor:pointer}button:disabled{opacity:.5;cursor:wait}small{display:block;color:#59635c;margin:10px 0}.status{min-height:28px;font-weight:600}.error{color:#9b302b}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid #a3c497;outline-offset:3px}[hidden]{display:none!important}.note{border-top:1px solid #d3d8cf;padding-top:18px;font-size:14px}
+</style></head><body><main><div class="brand">Y.AI</div><h1>Подключите рабочие инструменты</h1>
+<p>SSO выполнен. Введите персональные PAT для Jira и Confluence. Токены отправятся на gateway и будут храниться там в зашифрованном виде. В Kilo и OpenCode появятся инструменты поиска и чтения.</p>
+<form id="setup" autocomplete="off" hidden><div id="systems"></div><button type="submit" id="save">Продолжить вход</button></form>
+<p id="status" class="status" role="status" aria-live="polite">Проверяем подключение…</p>
+<p class="note">Пустые подключения можно пропустить. Сохранённый PAT можно оставить, заменить или удалить. Токены не записываются в конфиги и хранилище клиента. Используйте PAT с минимальными правами; браузер и менеджер паролей могут предлагать сохранить введённые значения — отклоните это предложение.</p>
+</main><script src="setup.js" defer></script></body></html>

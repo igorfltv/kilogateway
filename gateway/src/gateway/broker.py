@@ -132,6 +132,8 @@ class Broker:
         if self.s.shared_provider_credential:
             return self.s.provider_api_key.get_secret_value() if self.s.provider_credential_mode == "static" else ""
         credential = await self.active(owner)
+        if not self.s.provision_inference_on_login and (not credential or credential["expires_at"] <= utcnow()):
+            credential = await self.ensure(owner)
         if not credential:
             raise GatewayError("provider_credential_unavailable")
         if credential["expires_at"] <= utcnow():

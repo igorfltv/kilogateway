@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 
 from tools.device_login import approve
 from tools.keycloak_test_user import test_user
+from tools.mcp_login import complete_setup
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -36,7 +37,7 @@ async def smoke(client_env, authfile, original, username, password):
             process = await asyncio.create_subprocess_exec("kilo", "auth", "login", "--provider", "y.ai",
                 cwd=ROOT, env=client_env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
             print("Standard CLI: kilo auth login --provider y.ai (installed CLI; normal profile)", flush=True)
-            approved = False
+            approved, mcp_complete = False, False
             async with asyncio.timeout(180):
                 while chunk := await process.stdout.read(1024):
                     log.extend(chunk)
@@ -49,6 +50,10 @@ async def smoke(client_env, authfile, original, username, password):
                         await approve(match.group(0), username, password)
                         approved = True
                         print("Standard CLI: Company SSO selected automatically; real Device Flow approved", flush=True)
+                    setup = re.search(r"http://(?:localhost|127\.0\.0\.1):[0-9]+/[^\s]*auth/mcp/setup#ms_[\w-]+\.[\w-]+", clean)
+                    if setup and not mcp_complete:
+                        await complete_setup(setup.group(0))
+                        mcp_complete = True
                 status = await process.wait()
             if status or not approved:
                 (work / "login-diagnostic.log").write_bytes(log)

@@ -1,5 +1,7 @@
 # Угрозы и границы
 
+Jira/Confluence MCP: PAT шифруются с owner/system/endpoint AAD и не возвращаются клиенту. Одноразовая форма проверяет Origin, TTL, replay и credential revocation. MCP доступны через авторизованный loopback relay и фиксированные read-only серверные endpoints; redirects запрещены. Браузерный password manager вне контроля приложения; сохранение PAT в нём следует отклонить. Vault/KMS, Atlassian Cloud и write-tools не реализованы. Подробнее — [MCP](MCP.md).
+
 | Угроза | Реализованная защита | Практический предел |
 |---|---|---|
 | Подложный/чужой JWT, ID token | RS256 signature, trusted issuer/JWKS, audience, azp, typ, сроки, sub, две роли | Компрометация доверенного realm — доверенный security boundary |

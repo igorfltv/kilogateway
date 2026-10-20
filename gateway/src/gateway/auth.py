@@ -115,7 +115,14 @@ class Auth:
                 if prev["expires_at"] <= utcnow() or not prev["ciphertext"]:
                     raise GatewayError("idempotency_result_expired", 409)
                 return json.loads(self.store.open(prev["ciphertext"], f"exchange:{owner}:{idem}"))
-            await self.broker.ensure(owner)
+            if self.s.provision_inference_on_login:
+                await self.broker.ensure(owner)
+            else:
+                # Corporate MCP login need not allocate a paid inference key.
+                async with self.db.tx() as c:
+                    policy = await one(c, "SELECT providers FROM policies WHERE id=:id", id=p["policy_id"])
+                if self.s.provider_mode not in policy["providers"]:
+                    raise GatewayError("provider_not_allowed", 403)
             ident = uid("gc_")
             key = "cg_" + ident + "." + secrets.token_urlsafe(32)
             exp = utcnow() + timedelta(seconds=self.s.gateway_credential_ttl_seconds)

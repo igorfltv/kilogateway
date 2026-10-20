@@ -1,5 +1,7 @@
 # Y.AI в OpenCode v2
 
+После SSO плагин открывает форму gateway для Jira/Confluence PAT. MCP подключаются автоматически; PAT не попадают в native credential DB. [Flow и параметры](../docs/MCP.md).
+
 Проверенная версия — **OpenCode 2.0.26**, macOS ARM64. Kilo и OpenCode используют один пакет и общую реализацию Keycloak Device Flow; у OpenCode отдельный native v2 entrypoint `opencode/server.js`, скомпилированная логика — `dist/opencode.js`. Старый Kilo entrypoint не изменяет формат своих credentials.
 
 ## Установка

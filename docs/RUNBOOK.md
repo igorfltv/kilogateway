@@ -61,6 +61,8 @@ Python HTTP client проверяет TLS и не использует прои�
 
 ## Admin, политики и budgets
 
+При `PROVISION_INFERENCE_ON_LOGIN=false` SSO и MCP не создают inference credential. Первый запрос к модели выполняет provisioning под прежними DB locks и allocation limits. Это позволяет использовать корпоративные MCP при исчерпанном inference budget; сам лимит не сбрасывается и не увеличивается. См. [MCP и PAT](MCP.md).
+
 У admin отдельный `ADMIN_TOKEN` ≥32 случайных символов, API закрывается внутренним ingress. Gateway credentials им не являются. На сервере:
 
 ```sh

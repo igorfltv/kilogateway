@@ -9,6 +9,7 @@
 | Поднять локально, получить dev пароль, включить настоящий inference | [Локальная установка](docs/LOCAL_SETUP.md) |
 | Развернуть в Kubernetes, настроить БД, Secret, TLS, миграции и scaling | [Kubernetes](deploy/kubernetes/README.md) |
 | Подготовить корпоративный realm/clients/roles | [Keycloak](docs/KEYCLOAK.md) |
+| Получить Jira/Confluence MCP после SSO, ввести PAT без сохранения на клиенте | [MCP и персональные PAT](docs/MCP.md) |
 | Установить клиент из исходников или tarball | [Kilo](plugin/README.md), [OpenCode v2](plugin/OPENCODE.md) |
 | Проверить login → модели → JSON/SSE/tools → logout/revoke | [Полный flow](docs/VALIDATION.md) |
 | Изменить адреса, ключи, пароли и режим upstream | [Параметры конфигурации](config/README.md) |

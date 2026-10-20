@@ -28,6 +28,7 @@ from providers.openrouter import OpenRouterAdapter
 from tools.device_login import access_token, approve
 from tools.keycloak_test_user import test_user
 from tools.kilo_config import build_config
+from tools.mcp_login import complete_setup
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -66,7 +67,7 @@ async def cli(binary, args, cwd, env, timeout=180):
 async def native_login(binary, project, env, issuer, username, password):
     p = await asyncio.create_subprocess_exec(binary, "auth", "login", "--provider", "y.ai",
         cwd=project, env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT)
-    output, approved = bytearray(), False
+    output, approved, mcp_complete = bytearray(), False, False
     try:
         async with asyncio.timeout(180):
             while chunk := await p.stdout.read(1024):
@@ -79,8 +80,12 @@ async def native_login(binary, project, env, issuer, username, password):
                 if match and not approved:
                     await approve(match.group(0), username, password)
                     approved = True
+                setup = re.search(r"http://(?:localhost|127\.0\.0\.1):[0-9]+/[^\s]*auth/mcp/setup#ms_[\w-]+\.[\w-]+", clean)
+                if setup and not mcp_complete:
+                    await complete_setup(setup.group(0))
+                    mcp_complete = True
             if await p.wait() or not approved:
-                clean = re.sub(r"(?:sk-or-v1-|cg_gc_)[A-Za-z0-9._-]+", "[REDACTED]", output.decode(errors="replace"))
+                clean = re.sub(r"(?:sk-or-v1-|cg_gc_|ms_)[A-Za-z0-9._-]+", "[REDACTED]", output.decode(errors="replace"))
                 clean = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", clean)
                 (project.parent/"native-login.redacted.log").write_text(clean)
                 raise RuntimeError("native_login_failed")

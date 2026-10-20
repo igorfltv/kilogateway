@@ -9,3 +9,6 @@ async def initialize_test_schema(connection, migrations: Path):
         if statement.strip():
             await run(connection, statement)
     await run(connection, (migrations / "usage_counters.sql").read_text())
+    for statement in (migrations / "mcp.sql").read_text().split(";"):
+        if statement.strip():
+            await run(connection, statement)

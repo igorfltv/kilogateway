@@ -1,5 +1,7 @@
 # Y.AI Gateway в Kubernetes
 
+Jira/Confluence MCP: задайте `JIRA_BASE_URL` и `CONFLUENCE_BASE_URL` в ConfigMap и выполните миграцию **003** перед API rollout. PAT вводят пользователи через gateway, они зашифрованы в PostgreSQL; в Kubernetes Secret пользовательские PAT не добавляются. [Flow, limits и требования](../../docs/MCP.md).
+
 API stateless, по одному Uvicorn process на pod. Общий PostgreSQL хранит credentials, permissions, атомарные quotas и durable jobs. Redis не требуется. Keycloak и OpenAI-compatible inference endpoint предоставляются окружением; dev Keycloak/PostgreSQL и FAKE provider в production manifests не входят.
 
 | Каталог | Содержимое |

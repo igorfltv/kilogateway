@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "real_keycloak": true,
+  "fake_atlassian": true,
+  "inference_calls": 0,
+  "provider_keys_created": 0,
+  "checks": {
+    "kilo_sso_pat_login": "PASS",
+    "kilo_native_mcp_registry": "PASS",
+    "kilo_no_pat_in_client_state": "PASS",
+    "opencode_sso_pat_login": "PASS",
+    "opencode_native_mcp_registry": "PASS",
+    "opencode_no_pat_in_client_state": "PASS",
+    "rendered_pat_form": "PASS",
+    "http_mcp_tools_executed": "PASS",
+    "server_ciphertext_only": "PASS",
+    "local_compose_login_without_new_inference_key": "PASS",
+    "existing_allocation_and_budget_preserved": "PASS",
+    "configured_private_secrets_absent_from_deliverables": "PASS"
+  },
+  "personal_allocation_limit_usd": 1.5,
+  "clients": {
+    "kilo": "7.8.15",
+    "opencode": "opencode v2.0.26"
+  },
+  "validated_at": "2026-10-20T13:00:05.224351+00:00"
+}

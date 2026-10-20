@@ -148,6 +148,9 @@ async def main():
                 'history',1,1,now()-interval '2 days',now()-interval '1 day','success' FROM generate_series(1,:count) n""",
                 users=args.users, count=args.history)
             await run(conn, (ROOT/"gateway/migrations/usage_counters.sql").read_text())
+            for sql in (ROOT/"gateway/migrations/mcp.sql").read_text().split(";"):
+                if sql.strip():
+                    await run(conn, sql)
         await launch("tools.load_fixture:app", fixture_port)
         await launch("gateway.app:create_app", api_port, args.workers)
         async with httpx.AsyncClient(trust_env=False, follow_redirects=False, timeout=30,

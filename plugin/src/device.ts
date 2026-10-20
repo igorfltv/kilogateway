@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { hostname } from "node:os"
+import { onboardMCP } from "./mcp.js"
 
 export type Options = { issuer: string; gateway: string; clientId?: string; dev?: boolean; openBrowser?: boolean;
   discoveryUrl?: string; deviceUrl?: string; tokenUrl?: string; oidcAllowedOrigins?: string[] }
@@ -103,14 +104,22 @@ export async function begin(opts: Options, fetcher: Fetcher = fetch, signal?: Ab
     throw new Error("Invalid device response")
   }
   const deadline = Date.now() + Math.min(device.expires_in, 900) * 1000
+  // Display the future form URL in the native auth instructions. OpenCode runs
+  // polling inside its daemon, whose stderr is not the CLI's auth UI.
+  const setupTicket = "ms_" + randomUUID().replaceAll("-", "") + "." + randomUUID().replaceAll("-", "") + randomUUID().replaceAll("-", "")
+  let mcpEnabled = false
+  const optionsResponse = await request(fetcher, opts.gateway + "/auth/cli/options", {}, signal)
+  if (optionsResponse.ok) mcpEnabled = (await optionsResponse.json() as {mcp_setup?: boolean}).mcp_setup === true
   let interval = Math.max(1, Number(device.interval) || 5)
   const idem = randomUUID()
   let credentialExpiresAt: number | undefined
   return {
     get credentialExpiresAt() { return credentialExpiresAt },
     url: device.verification_uri_complete || device.verification_uri,
-    instructions: `Y.AI SSO: open ${device.verification_uri}, enter code ${device.user_code}. Ctrl+C cancels.`,
+    instructions: `Y.AI SSO: open ${device.verification_uri}, enter code ${device.user_code}. Ctrl+C cancels.` +
+      (mcpEnabled ? `\nAfter SSO, enter Jira / Confluence PATs (or skip): ${opts.gateway}/auth/mcp/setup#${setupTicket}` : ""),
     async poll(wait = sleep): Promise<{ type: "success"; key: string; metadata: Record<string, string> }> {
+      let ssoComplete = false
       const overall = AbortSignal.timeout(Math.max(1, deadline - Date.now()))
       const pollSignal = signal ? AbortSignal.any([signal, overall]) : overall
       try {
@@ -154,11 +163,13 @@ export async function begin(opts: Options, fetcher: Fetcher = fetch, signal?: Ab
             await wait(1000, pollSignal); continue
           }
           if (!response.ok) throw await exchangeFailure(response)
-          const result = await response.json() as { credential?: { key?: string; expires_at?: string }; base_url?: string; provider?: string }
+          const result = await response.json() as { credential?: { key?: string; expires_at?: string }; base_url?: string; provider?: string; mcp_setup_required?: boolean }
           if (result.provider !== "company-ai" || result.base_url !== opts.gateway + "/v1" || !result.credential?.key?.startsWith("cg_gc_")) {
             throw new Error("Invalid company gateway exchange response")
           }
           credentialExpiresAt = result.credential.expires_at ? Date.parse(result.credential.expires_at) : undefined
+          ssoComplete = true
+          if (result.mcp_setup_required) await onboardMCP(opts, result.credential.key, fetcher, signal, wait, undefined, setupTicket)
           return { type: "success", key: result.credential.key,
             metadata: { company_gateway: opts.gateway, company_issuer: opts.issuer } }
         }
@@ -166,7 +177,7 @@ export async function begin(opts: Options, fetcher: Fetcher = fetch, signal?: Ab
       throw new Error("Company SSO device code expired")
       } catch (e) {
         if (signal?.aborted) throw new Error("Company SSO cancelled")
-        if (overall.aborted || Date.now() >= deadline) throw new Error("Company SSO device code expired")
+        if (!ssoComplete && (overall.aborted || Date.now() >= deadline)) throw new Error("Company SSO device code expired")
         throw e
       }
     },

@@ -70,7 +70,7 @@ class TestProvider:
 
 @pytest_asyncio.fixture
 async def stack():
-    s = Settings(model_catalog_file="", model_catalog=[], provider_mode="fake")
+    s = Settings(model_catalog_file="", model_catalog=[], provider_mode="fake", provision_inference_on_login=True)
     if s.profile != "dev":
         pytest.skip("Integration requires isolated dev PostgreSQL; run make up/bootstrap")
     identity, provider = TestIdentity(), TestProvider()

@@ -1,5 +1,9 @@
 # Endpoints и секреты
 
+`JIRA_BASE_URL` и `CONFLUENCE_BASE_URL` включают Data Center MCP и форму PAT после SSO. Dev-профили используют `fake-atlassian`, production оставляет URL пустыми. Пользователь вводит PAT напрямую gateway; endpoint/client configs их не содержат. [Flow и настройки](../docs/MCP.md).
+
+`PROVISION_INFERENCE_ON_LOGIN=false` отделяет вход/настройку MCP от выдачи managed inference-ключа. Его allocation и quota проверяются при первом запросе к модели. Default — `true`, а локальные managed `openai-compatible-*` профили явно выбирают `false`. Существующие allocations и limits сохраняются.
+
 Публичные адреса и secret values хранятся отдельно. Чтобы сменить адреса, достаточно выбрать другой endpoints-файл, перезапустить gateway и заново экспортировать клиентскую конфигурацию.
 
 | Файл | Использование |

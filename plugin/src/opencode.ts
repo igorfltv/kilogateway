@@ -2,6 +2,7 @@ import type { Plugin, Credential } from "@opencode/plugin"
 import { begin, config } from "./device.js"
 import { openBrowser } from "./browser.js"
 import { createOpenCodeTransport } from "./opencode-transport.js"
+import { catalog, createMCPRelay, type MCPServer } from "./mcp.js"
 
 const providerID = "y.ai"
 const methodID = "company-sso"
@@ -13,6 +14,9 @@ const plugin: Plugin.Plugin = {
     const registrations: { dispose(): Promise<void> }[] = []
     let pending: AbortController | undefined
     let disposed = false
+    let mcpRelay: Awaited<ReturnType<typeof createMCPRelay>> | undefined
+    let mcpServers: MCPServer[] = []
+    let reloadTimer: ReturnType<typeof setTimeout> | undefined
     async function credential() {
       const connection = await ctx.integration.connection.active(providerID)
       const auth = connection ? await ctx.integration.connection.resolve(connection) : undefined
@@ -25,6 +29,8 @@ const plugin: Plugin.Plugin = {
     const transport = await createOpenCodeTransport(opts.gateway, credential)
     const cleanup = async () => {
       disposed = true; pending?.abort()
+      clearTimeout(reloadTimer)
+      await mcpRelay?.close()
       await transport.close()
       for (const item of registrations.reverse()) await item.dispose()
     }
@@ -53,9 +59,16 @@ const plugin: Plugin.Plugin = {
             const flow = await begin(opts, fetch, controller.signal, "opencode-cli")
             if (disposed || pending !== controller) { controller.abort(); throw new Error("Y.AI login cancelled") }
             if (opts.openBrowser) openBrowser(flow.url)
-            const callback = flow.poll().then(result => {
+            const callback = flow.poll().then(async result => {
               if (!Number.isFinite(flow.credentialExpiresAt) || flow.credentialExpiresAt! <= Date.now()) {
                 throw new Error("Invalid Y.AI credential expiry")
+              }
+              if (ctx.mcp) {
+                mcpServers = await catalog(opts, result.key)
+                if (mcpServers.length) mcpRelay ??= await createMCPRelay(opts, credential)
+                // The native auth callback persists the credential after returning.
+                reloadTimer = setTimeout(() => { if (!disposed) void ctx.mcp.reload().catch(() => {}) }, 500)
+                reloadTimer.unref()
               }
               // V2 OAuth methods persist OAuth-shaped values. Only the gateway
               // credential goes in access; there is no IdP/provider/refresh token.
@@ -68,6 +81,28 @@ const plugin: Plugin.Plugin = {
           async refresh() { throw new Error("Y.AI access expired. Run opencode auth login --provider y.ai") },
         })
       }))
+      if (ctx.mcp) {
+        registrations.push(await ctx.mcp.transform(editor => {
+          for (const name of ["y-ai-jira", "y-ai-confluence"]) editor.remove(name)
+          if (mcpRelay) for (const server of mcpServers) editor.set("y-ai-" + server.id,
+            {...mcpRelay.remote(server.id),protocol:"legacy",disabled:false})
+        }))
+        // Resolving integration connections during setup can recursively wait for
+        // plugin initialization. Load the catalog only after setup has returned.
+        reloadTimer = setTimeout(() => {
+          void (async () => {
+            try {
+              const key = await credential()
+              const servers = await catalog(opts, key)
+              if (disposed) return
+              mcpServers = servers
+              if (servers.length) mcpRelay ??= await createMCPRelay(opts, credential)
+              if (!disposed) await ctx.mcp.reload()
+            } catch { /* No active Y.AI login yet; authorize reloads after login. */ }
+          })()
+        }, 100)
+        reloadTimer.unref()
+      }
       registrations.push(await ctx.session.hook("model.request", input => {
         input.baseURL = opts.gateway + "/v1"
         for (const name of Object.keys(input.headers)) {

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Y.AI Gateway: концепция управления MCP, корпоративными подключениями и API-ключами. Три слайда.">
+<title>Y.AI — MCP и корпоративный доступ</title>
+<style>
+:root{--paper:#f6f5f0;--ink:#17231e;--muted:#5c6961;--line:#ccd3c8;--accent:#c6ee80;--green:#285943;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--paper);font:20px/1.45 Arial,Helvetica,sans-serif}button{font:inherit;cursor:pointer}a{color:inherit;text-underline-offset:3px}button:focus-visible,a:focus-visible{outline:3px solid var(--green);outline-offset:4px}::selection{background:var(--accent);color:var(--ink)}
+.topbar{position:fixed;z-index:5;inset:0 0 auto;height:74px;padding:0 5vw;background:var(--paper);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:20px}.brand{display:flex;align-items:center;gap:12px;font-size:23px;font-weight:700;letter-spacing:-1px}.brand svg{width:32px;height:32px}.brand span{font-size:13px;font-weight:400;letter-spacing:0;margin-left:18px;color:var(--muted)}.actions{display:flex;gap:7px}.text-button{border:0;background:transparent;padding:11px 13px;font-size:14px;color:inherit}.text-button:hover{background:#e8ece2}
+main{max-width:1560px;margin:auto;padding:107px 6vw 91px}.slide{min-height:calc(100svh - 198px);display:flex;flex-direction:column;gap:24px;margin-bottom:80px}.js .slide{margin-bottom:0}.js .slide[hidden]{display:none}.eyebrow{margin:0;font:12px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.1em;color:var(--green)}h1,h2,h3,p{margin:0}h1,h2{font-size:clamp(34px,3.7vw,54px);line-height:1.1;letter-spacing:-.045em;font-weight:600;max-width:1200px}h3{font-size:23px;line-height:1.2;letter-spacing:-.02em;font-weight:600}.lead{font-size:clamp(19px,1.7vw,24px);color:var(--muted);max-width:1150px}.caption{font-size:15px;color:var(--muted)}.footnote{margin-top:auto;font-size:13px;color:var(--muted)}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:55px}.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:36px}.feature{border-top:2px solid var(--ink);padding-top:17px}.feature h3{margin-bottom:9px}.feature p{font-size:18px;color:var(--muted)}.status{padding-top:17px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}.status strong{font-weight:500;color:var(--ink)}.small-label{font:12px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--green)}
+.architecture{width:100%;height:auto;max-height:310px;margin-top:-12px}.architecture text{font-family:Arial,Helvetica,sans-serif;fill:var(--ink)}.architecture .node{fill:#fcfdf8;stroke:var(--line);stroke-width:1.5}.architecture .core{fill:var(--ink);stroke:var(--ink)}.architecture .core-text{fill:var(--paper)}.architecture .title{font-size:23px;font-weight:500}.architecture .sub{font-size:16px;fill:var(--muted)}.architecture .wire{fill:none;stroke:#66756a;stroke-width:2}.architecture .secret-wire{stroke:var(--green);stroke-dasharray:6 5;stroke-width:2;fill:none}.diagram-mobile{display:none}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:20px}th{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em;font-weight:400;padding:0 24px 15px 0}td{border-top:1px solid var(--line);padding:23px 24px 23px 0;vertical-align:top}td:first-child{font-weight:500;width:29%}.table-sub{font-size:16px;color:var(--muted);display:block;margin-top:5px;font-weight:400}.detail{padding-top:20px;border-top:2px solid var(--ink)}.detail p{margin-top:12px;font-size:19px;color:var(--muted)}.callout{border-left:4px solid var(--green);padding-left:23px;font-size:24px;line-height:1.3}.scope{list-style:none;padding:0;margin:14px 0 0;counter-reset:scope}.scope li{position:relative;counter-increment:scope;padding:12px 0 12px 43px;border-bottom:1px solid var(--line);font-size:20px}.scope li:before{content:"0" counter(scope);position:absolute;left:0;top:15px;font:13px var(--mono);color:var(--green)}.checks{padding:0;list-style:none;margin:14px 0 0}.checks li{padding:12px 0 12px 27px;border-bottom:1px solid var(--line);position:relative;font-size:19px}.checks li:before{content:"✓";position:absolute;left:0;color:var(--green)}.decisions{display:grid;grid-template-columns:repeat(4,1fr);gap:25px;border-top:2px solid var(--ink);padding-top:17px;margin-top:5px}.decisions p{margin-top:8px;font-size:17px}.sources{display:flex;flex-wrap:wrap;gap:20px;margin-top:8px;font-size:12px;color:var(--muted)}
+.bottom-bar{position:fixed;inset:auto 0 0;height:66px;padding:0 5vw;display:flex;justify-content:space-between;align-items:center;gap:22px;background:var(--paper);border-top:1px solid var(--line);z-index:5}.counter{font:14px var(--mono);white-space:nowrap}.progress{height:3px;background:var(--line);max-width:600px;flex:1}.progress span{display:block;height:100%;background:var(--green);transition:width .15s}.nav{display:flex;gap:8px}.nav button{background:transparent;border:1px solid var(--line);padding:10px 19px;min-height:42px;font-size:14px;color:var(--ink)}.nav .next{background:var(--ink);border-color:var(--ink);color:var(--paper)}button:disabled{opacity:.35;cursor:default}.js-only{display:none}.js .js-only{display:flex}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:1000px){main{padding:98px 5vw 86px}.slide{gap:16px;min-height:calc(100svh - 184px)}.brand span{margin-left:8px}.two-col{gap:30px}.feature p{font-size:17px}.architecture{max-height:245px}td{font-size:17px;padding-block:15px}.detail p,.checks li{font-size:17px}.detail p{margin-top:9px}.scope li{font-size:17px}.decisions{gap:16px}.decisions p{font-size:16px}.footnote{font-size:12px}.scope li,.checks li{padding-top:10px;padding-bottom:10px}.scope li:before{top:13px}}
+@media(max-width:700px){.topbar{height:64px}.brand span,.fullscreen{display:none}.brand{font-size:22px}.text-button{padding:11px 9px;font-size:13px}main{padding:89px 6vw 88px}.slide{min-height:calc(100svh - 177px);gap:24px}h1,h2{font-size:35px}.lead{font-size:20px}.architecture{display:none}.diagram-mobile{display:grid;grid-template-columns:1fr 1fr;gap:17px}.diagram-mobile p{border-left:3px solid var(--green);padding-left:12px;font-size:19px}.diagram-mobile small{display:block;font-size:14px;color:var(--muted);margin-top:5px}.two-col,.three-col{grid-template-columns:1fr;gap:25px}.feature p{font-size:18px}.status{font-size:14px}.callout{font-size:22px;padding-left:17px}.decisions{grid-template-columns:1fr 1fr;gap:22px}.decisions p{font-size:17px}.bottom-bar{gap:14px}.progress{max-width:75px}.nav button{padding:10px 12px;min-height:44px}.sources{gap:12px}table,tbody,tr{display:block}thead{display:none}tr{border-top:1px solid var(--line);padding:13px 0}td,td:first-child{display:grid;grid-template-columns:38% 62%;gap:0;width:auto;border:0;padding:8px 0;font-size:18px;font-weight:400}td:before{content:attr(data-label);font-size:13px;color:var(--muted);padding-right:15px}.table-sub{font-size:15px;grid-column:2}.detail p{font-size:18px}.footnote{font-size:12px}}
+@media print{@page{size:13.333in 7.5in;margin:0}html,body{background:#f6f5f0;color:#17231e;-webkit-print-color-adjust:exact;print-color-adjust:exact}.topbar,.bottom-bar{display:none!important}main{padding:0;margin:0;max-width:none}.slide,.js .slide,.js .slide[hidden]{display:flex!important;width:1280px;height:720px;min-height:0;margin:0;padding:48px 64px;gap:24px;break-after:page;page-break-after:always;overflow:hidden}.slide:last-child{break-after:auto}h1,h2{font-size:49px}.lead{font-size:23px}.architecture{display:block;height:280px;max-height:280px}.diagram-mobile{display:none}.two-col{grid-template-columns:1fr 1fr;gap:48px}.three-col{grid-template-columns:repeat(3,1fr)}.decisions{grid-template-columns:repeat(4,1fr)}table{display:table;font-size:20px}thead{display:table-header-group}tbody{display:table-row-group}tr{display:table-row}td,td:first-child{display:table-cell;border-top:1px solid var(--line);padding:23px 24px 23px 0;font-size:20px}td:before{display:none}.status,.footnote{font-size:13px}.sources{font-size:12px}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#111318"/><path d="M14 15h10l8 14 8-14h10L37 38v12H27V38Z" fill="#fff"/><circle cx="48" cy="49" r="4" fill="#fff"/></svg>Y.AI<span>Концепция расширения gateway</span></div><nav class="actions js-only" aria-label="Управление презентацией"><button class="text-button fullscreen" id="fullscreen">Полный экран</button><button class="text-button" id="print">Печать / PDF</button></nav></header>
+<main id="deck">
+<section class="slide" data-title="MCP и корпоративный доступ">
+ <p class="eyebrow">01 / Архитектура</p>
+ <h1>MCP и корпоративный доступ через Y.AI</h1>
+ <p class="lead">Gateway управляет доступными инструментами и подключениями к корпоративным системам</p>
+ <svg class="architecture" viewBox="0 0 1180 308" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">Схема корпоративного MCP Gateway</title><desc id="arch-desc">Kilo и OpenCode вызывают Y.AI Gateway, который проверяет Keycloak и политики. Gateway передаёт вызов MCP-коннектору. Коннектор получает отдельный credential из серверного хранилища и обращается к корпоративному API.</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#66756a"/></marker><marker id="secret-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#285943"/></marker></defs>
+  <path class="wire" d="M195 153H279M530 153H625M860 153H950M405 72V108" marker-end="url(#arrow)"/>
+  <path class="secret-wire" d="M742 241V198" marker-end="url(#secret-arrow)"/>
+  <rect class="node" x="1" y="108" width="194" height="90" rx="4"/><text class="title" x="98" y="146" text-anchor="middle">Kilo / OpenCode</text><text class="sub" x="98" y="175" text-anchor="middle">MCP-клиенты</text>
+  <rect class="core" x="280" y="108" width="250" height="90" rx="4"/><text class="title core-text" x="405" y="146" text-anchor="middle">Y.AI Gateway</text><text class="sub core-text" x="405" y="175" text-anchor="middle">Каталог, права, proxy</text>
+  <rect class="node" x="625" y="108" width="235" height="90" rx="4"/><text class="title" x="742" y="146" text-anchor="middle">MCP-коннектор</text><text class="sub" x="742" y="175" text-anchor="middle">Credential и вызов API</text>
+  <rect class="node" x="950" y="108" width="228" height="90" rx="4"/><text class="title" x="1064" y="146" text-anchor="middle">Корпоративный API</text><text class="sub" x="1064" y="175" text-anchor="middle">GitLab, Jira и другие</text>
+  <rect class="node" x="280" y="6" width="250" height="66" rx="4"/><text class="title" x="405" y="47" text-anchor="middle">Keycloak и политики</text>
+  <rect class="node" x="625" y="241" width="235" height="66" rx="4"/><text class="title" x="742" y="282" text-anchor="middle">Secret storage</text>
+ </svg>
+ <div class="diagram-mobile"><p>Kilo / OpenCode<small>Запрос инструмента</small></p><p>Y.AI Gateway<small>Каталог и проверка прав</small></p><p>MCP-коннектор<small>Получение ключа на сервере</small></p><p>Корпоративный API<small>Выполнение разрешённого действия</small></p></div>
+ <div class="three-col"><div class="feature"><h3>Каталог MCP</h3><p>Список серверов и инструментов по ролям и группам</p></div><div class="feature"><h3>Права на вызовы</h3><p>Ограничения на действия и конкретные ресурсы</p></div><div class="feature"><h3>Корпоративные ключи</h3><p>Персональные подключения, ротация и отзыв</p></div></div>
+ <p class="status"><strong>Уже есть:</strong> SSO, политики, AES-GCM storage и аудит. <strong>Предстоит:</strong> MCP proxy, коннекторы и production Vault/KMS backend. Существующий inference сохраняет отдельный маршрут.</p>
+</section>
+<section class="slide" data-title="Управление ключами и правами">
+ <p class="eyebrow">02 / Доступ и секреты</p>
+ <h2>Корпоративные ключи остаются на сервере</h2>
+ <p class="lead">Коннектор подставляет credential только в разрешённый запрос к нужной системе</p>
+ <table><thead><tr><th>Подключение</th><th>Кого видит корпоративная система</th><th>Кто определяет доступ</th></tr></thead><tbody><tr><td data-label="Подключение">Персональное<span class="table-sub">OAuth или API key сотрудника</span></td><td data-label="Система видит">Конкретного пользователя</td><td data-label="Права">Его аккаунт и policy gateway</td></tr><tr><td data-label="Подключение">Сервисное<span class="table-sub">Ключ учётной записи интеграции</span></td><td data-label="Система видит">Сервисную учётку</td><td data-label="Права">Сервисная роль и ограничения gateway по пользователю и ресурсу</td></tr></tbody></table>
+ <div class="two-col"><div class="detail"><h3>Серверная проверка</h3><p>Права проверяются на каждом вызове. Аудит фиксирует инициатора, инструмент и результат без секретов.</p></div><div class="detail"><h3>Хранение credentials</h3><p>Dev: текущий AES-GCM. Production: Vault либо PostgreSQL с envelope encryption через KMS.</p><p>Изоляция по владельцу и системе.</p></div></div>
+ <p class="footnote">У корпоративного API отдельный credential. Входной токен MCP-клиента не передаётся дальше. Ключи отсутствуют в клиентских конфигах, промптах и ответах инструментов. <a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization" target="_blank" rel="noopener noreferrer">MCP Authorization</a></p>
+</section>
+<section class="slide" data-title="MVP и решения для старта">
+ <p class="eyebrow">03 / Первая версия</p>
+ <h2>Один коннектор и сквозная проверка доступа</h2>
+ <p class="lead">Первую интеграцию выбираем по реальному корпоративному сценарию</p>
+ <div class="two-col"><div><h3>Объём MVP</h3><ol class="scope"><li>Remote HTTP MCP proxy</li><li>Каталог и права на инструменты</li><li>Персональные подключения</li><li>MCP по запросу в обоих CLI</li></ol></div><div><h3>Критерии готовности</h3><ul class="checks"><li>Запрет проверяется на tools/call</li><li>Чужие credentials недоступны</li><li>Ключ не покидает сервер</li><li>Вызов и отзыв работают в CLI</li></ul></div></div>
+ <div class="decisions"><div><span class="small-label">Система</span><p>Первый корпоративный API и инструмент</p></div><div><span class="small-label">Учётка</span><p>Персональный OAuth/API key или сервисный ключ</p></div><div><span class="small-label">Права</span><p>Кто читает, кто изменяет и какие ресурсы</p></div><div><span class="small-label">Хранилище</span><p>Доступный Vault/KMS или backend для пилота</p></div></div>
+ <div class="footnote"><p>Это архитектурное предложение. Local stdio MCP и произвольный запуск процессов оставляем за рамками MVP. Версию протокола, OAuth и нагрузку MCP проверяем отдельно.</p><div class="sources"><a href="https://github.com/igorfltv/kilogateway" target="_blank" rel="noopener noreferrer">Исходный gateway</a><a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization" target="_blank" rel="noopener noreferrer">MCP Authorization</a><a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/security_best_practices" target="_blank" rel="noopener noreferrer">MCP Security</a></div></div>
+</section>
+</main>
+<footer class="bottom-bar js-only"><span class="counter" id="counter">01 / 03</span><div class="progress" role="progressbar" aria-label="Прогресс презентации" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1"><span id="progress"></span></div><div class="nav"><button id="prev" aria-label="Предыдущий слайд">Назад</button><button id="next" class="next" aria-label="Следующий слайд">Далее</button></div></footer>
+<div class="sr-only" aria-live="polite" id="announcement"></div>
+<script>
+(()=>{
+ 'use strict';
+ const slides=[...document.querySelectorAll('.slide')],counter=document.getElementById('counter'),progress=document.getElementById('progress'),prev=document.getElementById('prev'),next=document.getElementById('next'),announcement=document.getElementById('announcement'),bar=document.querySelector('[role="progressbar"]');
+ let current=0,touchStart=null;
+ document.documentElement.classList.add('js');
+ slides.forEach((slide,i)=>{slide.id='slide-'+(i+1);slide.setAttribute('role','group');slide.setAttribute('aria-roledescription','слайд');slide.setAttribute('aria-label',(i+1)+' из '+slides.length)});
+ function show(index,updateHash=true){
+  current=Math.min(slides.length-1,Math.max(0,index));slides.forEach((slide,i)=>slide.hidden=i!==current);
+  counter.textContent=String(current+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  progress.style.width=((current+1)/slides.length*100)+'%';bar.setAttribute('aria-valuenow',String(current+1));bar.setAttribute('aria-valuemax',String(slides.length));
+  prev.disabled=current===0;next.disabled=current===slides.length-1;document.title=slides[current].dataset.title+' — Y.AI';
+  announcement.textContent='Слайд '+(current+1)+' из '+slides.length+'. '+slides[current].dataset.title;
+  if(updateHash)history.replaceState(null,'','#slide-'+(current+1));window.scrollTo({top:0,behavior:'instant'});
+ }
+ function fullscreen(){if(document.fullscreenElement){document.exitFullscreen?.()}else{document.documentElement.requestFullscreen?.().catch(()=>{})}}
+ prev.addEventListener('click',()=>show(current-1));next.addEventListener('click',()=>show(current+1));
+ document.getElementById('fullscreen').addEventListener('click',fullscreen);document.getElementById('print').addEventListener('click',()=>window.print());
+ document.addEventListener('keydown',event=>{
+  if(event.ctrlKey||event.metaKey||event.altKey||/INPUT|TEXTAREA|SELECT/.test(event.target.tagName))return;
+  if(['ArrowRight','PageDown',' '].includes(event.key)){event.preventDefault();show(current+1)}
+  if(['ArrowLeft','PageUp'].includes(event.key)){event.preventDefault();show(current-1)}
+  if(event.key==='Home'){event.preventDefault();show(0)}if(event.key==='End'){event.preventDefault();show(slides.length-1)}
+  if(event.key.toLowerCase()==='f'){event.preventDefault();fullscreen()}
+ });
+ document.addEventListener('touchstart',event=>{touchStart=event.touches.length===1?{x:event.touches[0].clientX,y:event.touches[0].clientY}:null},{passive:true});
+ document.addEventListener('touchend',event=>{if(!touchStart)return;const touch=event.changedTouches[0],dx=touch.clientX-touchStart.x,dy=touch.clientY-touchStart.y;if(Math.abs(dx)>75&&Math.abs(dx)>Math.abs(dy)*2&&!window.getSelection()?.toString())show(current+(dx<0?1:-1));touchStart=null},{passive:true});
+ window.addEventListener('hashchange',()=>{const match=/^#slide-(\d+)$/.exec(location.hash);if(match)show(Number(match[1])-1,false)});
+ window.addEventListener('beforeprint',()=>slides.forEach(slide=>slide.hidden=false));
+ window.addEventListener('afterprint',()=>show(current));
+ const initial=/^#slide-(\d+)$/.exec(location.hash);show(initial?Number(initial[1])-1:0,false);
+})();
+</script>
+</body>
+</html>

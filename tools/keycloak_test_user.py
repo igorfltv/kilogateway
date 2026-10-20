@@ -15,15 +15,22 @@ async def test_user(allowed=True):
     if not base.startswith("http://localhost:"):
         raise RuntimeError("Test user creation is restricted to loopback")
     async with httpx.AsyncClient(trust_env=False, timeout=15) as c:
-        r = await c.post(base + "/realms/master/protocol/openid-connect/token", data={
-            "client_id": "admin-cli", "grant_type": "password", "username": os.environ["KC_ADMIN_USER"],
-            "password": os.environ["KC_ADMIN_PASSWORD"]})
-        r.raise_for_status()
-        token = r.json()["access_token"]
+        async def admin_token():
+            r = await c.post(base + "/realms/master/protocol/openid-connect/token", data={
+                "client_id": "admin-cli", "grant_type": "password", "username": os.environ["KC_ADMIN_USER"],
+                "password": os.environ["KC_ADMIN_PASSWORD"]})
+            r.raise_for_status()
+            return r.json()["access_token"]
+        token = await admin_token()
 
         async def admin(method, path, body=None):
+            nonlocal token
             r = await c.request(method, base + f"/admin/realms/{realm}" + path, json=body,
                                 headers={"Authorization": "Bearer " + token})
+            if r.status_code == 401:
+                token = await admin_token()
+                r = await c.request(method, base + f"/admin/realms/{realm}" + path, json=body,
+                                    headers={"Authorization": "Bearer " + token})
             r.raise_for_status()
             return r.json() if r.content else None
 

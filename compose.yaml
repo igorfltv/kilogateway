@@ -66,6 +66,18 @@ services:
     command: ["alembic", "upgrade", "head"]
     depends_on:
       postgres: {condition: service_healthy}
+  fake-atlassian:
+    <<: *app
+    env_file: []
+    environment: {}
+    volumes: []
+    command: ["uvicorn", "gateway.fake_atlassian:app", "--host", "0.0.0.0", "--port", "8091", "--no-access-log"]
+    ports: ["127.0.0.1:18091:8091"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8091/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
   gateway:
     <<: *app
     ports: ["127.0.0.1:18000:8000"]
@@ -73,6 +85,7 @@ services:
       migrate: {condition: service_completed_successfully}
       keycloak: {condition: service_healthy}
       fake-provider: {condition: service_healthy}
+      fake-atlassian: {condition: service_healthy}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
       interval: 5s

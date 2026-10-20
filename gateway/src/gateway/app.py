@@ -138,6 +138,9 @@ def create_app(settings=None, identity=None, provider=None, worker=True):
         if not hmac.compare_digest(token.encode(), s.admin_token.get_secret_value().encode()):
             raise GatewayError("admin_required", 403)
 
+    from gateway.mcp import mount_mcp
+    mount_mcp(app, s, db, auth, store, client, authenticated, bearer)
+
     @app.get("/health/live")
     async def live():
         return {"status": "live"}
@@ -147,7 +150,8 @@ def create_app(settings=None, identity=None, provider=None, worker=True):
         if runtime.draining:
             raise GatewayError("gateway_draining", 503)
         async with db.tx() as c:
-            row = await one(c, "SELECT id,(SELECT count(*) FROM usage_daily WHERE false) FROM policies WHERE id='default'")
+            row = await one(c, """SELECT id,(SELECT count(*) FROM usage_daily WHERE false),
+                (SELECT count(*) FROM mcp_credentials WHERE false) FROM policies WHERE id='default'""")
             if not row:
                 raise GatewayError("policy_not_initialized")
         try:
@@ -172,7 +176,8 @@ def create_app(settings=None, identity=None, provider=None, worker=True):
     @app.post("/auth/cli/exchange")
     async def exchange(body: ExchangeBody, authorization: str | None = Header(default=None),
                        idempotency_key: str = Header(min_length=16, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")):
-        return await auth.exchange(bearer(authorization), idempotency_key, body.device_name, body.client)
+        result = await auth.exchange(bearer(authorization), idempotency_key, body.device_name, body.client)
+        return {**result, "mcp_setup_required": bool(s.jira_base_url or s.confluence_base_url)}
 
     @app.get("/auth/cli/credentials")
     async def credentials(ctx=Depends(authenticated)):

@@ -19,7 +19,7 @@ test('custom discovery/device/token hosts and gateway prefix use explicit truste
   const flow=await begin(opts,f)
   const auth=await flow.poll(async()=>{})
   assert.equal(auth.metadata.company_gateway,opts.gateway)
-  assert.deepEqual(seen.map(x=>x[0]),[opts.discoveryUrl,opts.deviceUrl,opts.tokenUrl,opts.gateway+'/auth/cli/exchange'])
+  assert.deepEqual(seen.map(x=>x[0]),[opts.discoveryUrl,opts.deviceUrl,opts.gateway+'/auth/cli/options',opts.tokenUrl,opts.gateway+'/auth/cli/exchange'])
   assert.ok(seen.every(([,init])=>init.redirect==='error'))
   const transport=gatewayFetch(opts.gateway,auth.key,async(url,init)=>{seen.push([url,init]);return json({})})
   await transport(opts.gateway+'/v1/models')
