@@ -45,6 +45,27 @@ async function request(fetcher: Fetcher, url: string, init: RequestInit, signal?
   }
 }
 
+async function exchangeFailure(response: Response): Promise<Error> {
+  const messages = new Map([
+    ["429:principal_provider_budget_exhausted", "Upstream-key allocation limit reached. Retrying login will not reset it; ask the gateway administrator to review the allocation limit or configure a static inference key."],
+    ["429:principal_budget_exhausted", "Personal token quota exhausted; ask the gateway administrator to review the quota."],
+    ["429:principal_rate_limited", "Too many requests; wait before trying again."],
+    ["403:role_required", "SSO succeeded, but the account lacks the required Y.AI roles."],
+    ["403:provider_not_allowed", "The account policy does not allow this inference provider."],
+    ["403:principal_suspended", "The Y.AI account is suspended; contact the gateway administrator."],
+    ["403:corporate_access_revoked", "Corporate access was revoked; contact the gateway administrator."],
+    ["503:provisioning_reconciliation_required", "A previous upstream-key operation needs administrator reconciliation; do not repeat login."],
+  ])
+  try {
+    const payload = await response.json() as { error?: { code?: unknown } } | null
+    const code = payload?.error?.code
+    const message = typeof code === "string" && messages.get(`${response.status}:${code}`)
+    // Reflect only closed, known codes. Error bodies may contain sensitive upstream data.
+    if (message) return new Error(`Y.AI gateway: ${message} (${code}; HTTP ${response.status})`)
+  } catch {}
+  return new Error(`Y.AI gateway exchange failed (HTTP ${response.status}); contact the gateway administrator`)
+}
+
 export const sleep = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
   if (signal?.aborted) return reject(new Error("Company SSO cancelled"))
   const onAbort = () => { clearTimeout(t); reject(new Error("Company SSO cancelled")) }
@@ -132,7 +153,7 @@ export async function begin(opts: Options, fetcher: Fetcher = fetch, signal?: Ab
             if (attempt === 2 || signal?.aborted) throw new Error("Company gateway exchange unavailable")
             await wait(1000, pollSignal); continue
           }
-          if (!response.ok) throw new Error(`Company gateway exchange failed (${response.status}); check access or retry login`)
+          if (!response.ok) throw await exchangeFailure(response)
           const result = await response.json() as { credential?: { key?: string; expires_at?: string }; base_url?: string; provider?: string }
           if (result.provider !== "company-ai" || result.base_url !== opts.gateway + "/v1" || !result.credential?.key?.startsWith("cg_gc_")) {
             throw new Error("Invalid company gateway exchange response")

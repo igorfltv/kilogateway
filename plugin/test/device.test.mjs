@@ -73,3 +73,30 @@ test("stored credential cannot follow a changed project gateway",async()=>{
   company_gateway:opts.gateway,company_issuer:opts.issuer}}))
  assert.equal(loaded.baseURL,opts.gateway+"/v1")
 })
+
+for(const client of ['kilo-cli','opencode-cli'])test(`${client}: allocation exhaustion explains the permanent limit without reflecting secrets`,async()=>{
+ const m=mock([{access_token:'ACCESS_SECRET',token_type:'Bearer'}]);let exchanges=0
+ const fetcher=async(url,init)=>{
+  if(url.endsWith('/exchange')){
+   exchanges++;assert.equal(JSON.parse(init.body).client,client)
+   return json({error:{code:'principal_provider_budget_exhausted',message:'ACCESS_SECRET PROVIDER_SECRET'}},429)
+  }
+  return m.fetcher(url,init)
+ }
+ const flow=await begin(opts,fetcher,undefined,client)
+ await assert.rejects(flow.poll(async()=>{}),error=>{
+  assert.match(error.message,/allocation limit reached/)
+  assert.match(error.message,/Retrying login will not reset/)
+  assert.match(error.message,/principal_provider_budget_exhausted; HTTP 429/)
+  assert.ok(!error.message.includes('SECRET'));return true
+ })
+ assert.equal(exchanges,1)
+})
+
+for(const payload of [{error:{code:'UNTRUSTED_SECRET',message:'ACCESS_SECRET'}},null,'not-json'])test(`unknown gateway errors stay sanitized: ${typeof payload}`,async()=>{
+ const m=mock([{access_token:'ACCESS_SECRET',token_type:'Bearer'}])
+ const fetcher=async(url,init)=>url.endsWith('/exchange')
+  ?(payload==='not-json'?new Response('ACCESS_SECRET',{status:429}):json(payload,429)):m.fetcher(url,init)
+ const flow=await begin(opts,fetcher)
+ await assert.rejects(flow.poll(async()=>{}),/^Error: Y.AI gateway exchange failed \(HTTP 429\); contact the gateway administrator$/)
+})

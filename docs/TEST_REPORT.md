@@ -136,3 +136,9 @@ Gateway пересобран и развёрнут с `opencode-cli` в exchange
 Добавлены пошаговые local/Kubernetes/Keycloak/client/flow guides и публичные env templates. `make dev-secrets`/`make runtime-secrets` создают приватные файлы 0600 и не заменяют существующие. Внешние DB/IdP/inference credentials остаются изменяемыми параметрами; незаполненные secret placeholders отклоняются. Локальная рабочая конфигурация не изменялась.
 
 Проверены 63 unit/config tests, 20 PostgreSQL component tests, 26 клиентских тестов, Ruff, ссылки документации, инициализация обеих конфигураций с нуля и `docker compose config --quiet`. Strict Kubernetes validation: 28 объектов, 0 invalid/errors/skipped. Новые платные inference calls и deployment в целевой кластер в этой проверке не выполнялись. Результаты предыдущих native/live/load прогонов остаются отдельными историческими доказательствами.
+
+## OpenCode login после исчерпания managed allocation (2026-10-20)
+
+После expiry последнего upstream key вход получил `principal_provider_budget_exhausted`: накоплено $1.25 при лимите $1.25. С отдельного разрешения владельца создана персональная policy $1.50; прежние allocations/usage и default policy других пользователей сохранены. Настоящий `opencode auth login --provider y.ai` проверен в отдельном XDG profile и на отдельном managed-service port, затем подтверждены `/me`, две разрешённые модели и повторный exchange без нового allocation. Создан ровно один upstream key $0.25, который оставлен рабочим для владельца; временные gateway credentials и тестовый профиль очищены. Inference-запросов не было. Отчёт: `artifacts/reports/opencode-budget-restoration.json`.
+
+Общий auth runtime Kilo/OpenCode теперь объясняет известные ошибки квот/доступа закрытым набором безопасных сообщений, не отражает raw error bodies и не предлагает бесполезный повтор входа при lifetime allocation exhaustion. TypeScript build и 31 client test прошли. Это не сброс квоты и не автоматическое увеличение budgets.

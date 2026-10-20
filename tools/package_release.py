@@ -78,7 +78,7 @@ workspace=archive("y-ai-workspace",sum((tree(d) for d in ("gateway","plugin","to
     [ROOT/"artifacts/reports/live-validation.json",ROOT/"artifacts/reports/validation-summary.json",ROOT/"artifacts/reports/y-ai-provider-id.json",ROOT/"artifacts/reports/active-inference.json",ROOT/"artifacts/reports/openrouter-activation.json",ROOT/"artifacts/reports/opencode-native.json",ROOT/"artifacts/reports/opencode-transport-native.json",ROOT/"artifacts/reports/opencode-installation.json",
      ROOT/"artifacts/reports/handoff-checks.json",ROOT/"artifacts/reports/native-smoke.json",
      ROOT/"artifacts/reports/openai-compatible-static.json",ROOT/"artifacts/reports/openai-compatible-default.json",
-     ROOT/"artifacts/reports/openai-compatible-kilo.json",
+     ROOT/"artifacts/reports/openai-compatible-kilo.json",ROOT/"artifacts/reports/opencode-budget-restoration.json",
      *[ROOT/"artifacts/reports"/p for p in ("gateway-load.json","gateway-load-final.json","gateway-lifecycle.json",
         "kubernetes-validation.json","gateway-capacity-deployment.json","personal-budget-restoration.json")],
      ROOT/"artifacts/reports/openrouter-models-public.json",plugin])

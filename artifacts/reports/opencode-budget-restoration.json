@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "command": "opencode auth login --provider y.ai",
+  "personal_allocation_limit_usd": 1.5,
+  "prior_allocation_preserved": true,
+  "isolated_client_state": true,
+  "checks": {
+    "native_opencode_device_flow": "PASS",
+    "gateway_authorization_and_two_models": "PASS",
+    "repeat_login_reuses_single_upstream_key": "PASS",
+    "isolated_gateway_credentials_revoked": "PASS",
+    "normal_client_settings_and_credentials_preserved": "PASS"
+  },
+  "real_inference_calls": 0,
+  "provider_key_expires_at": "2026-10-20T12:46:00.786606+00:00",
+  "provider_key_limit_usd": 0.25
+}

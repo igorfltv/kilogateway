@@ -115,6 +115,12 @@ kilo auth logout y.ai
 
 ## 6. Kubernetes, нагрузка и поставка
 
+### Если SSO завершился ошибкой 429 при exchange
+
+Код `principal_provider_budget_exhausted` означает исчерпанный **lifetime allocation** managed upstream keys, а не фактическую стоимость запросов и не временный rate limit. После истечения provider key повторный вход требует нового выделения. Повтор login, ожидание `Retry-After` или local logout этот лимит не обнуляют. Администратор может согласованно увеличить персональную policy, сохранив накопленный allocation, либо настроить обычный static inference service key. Не сбрасывайте `provider_allocated` и не увеличивайте default policy всех пользователей ради одного тестового входа. Новый плагин выводит этот код и объяснение вместо общего совета повторить login.
+
+### Проверки окружения
+
 ```sh
 make kube-tools
 make kubernetes-check
