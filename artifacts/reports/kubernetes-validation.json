@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "cluster_deployment": "NOT_TESTED",
+  "checks": {
+    "base": "PASS",
+    "migrations": "PASS",
+    "overlays/inflight-hpa": "PASS",
+    "no_external_admin_or_metrics_ingress": "PASS",
+    "drain_and_schema_gate": "PASS",
+    "inflight_hpa_metric": "PASS"
+  },
+  "schema_validation": "PASS Kubernetes 1.34.0 / kubeconform 0.8.0",
+  "max_db_pool_connections_steady": 152,
+  "db_pool_budget_one_rollout_with_terminating_cohort": 321
+}

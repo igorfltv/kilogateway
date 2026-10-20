@@ -1,0 +1,16 @@
+{
+  "active_profile": "openrouter-managed",
+  "persisted_selectors": "PASS",
+  "implicit_provider_switch_rejected": "PASS",
+  "existing_policy_limits_preserved": "PASS",
+  "current_login": "PASS",
+  "native_auth_preserved": "PASS",
+  "native_model_names": [
+    "DeepSeek V4.1 Flash 1017",
+    "Qwen3.6 35B A3B"
+  ],
+  "unit_tests": 36,
+  "lint": "PASS",
+  "deployment_image": "existing_local_working_image",
+  "docker_hub_rebuild": "TLS_handshake_timeout"
+}

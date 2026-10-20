@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "opencode": "2.0.26",
+  "real_credentials_used": false,
+  "native_redirect_blocked": "PASS",
+  "native_credential_origin_binding": "PASS",
+  "capture_requests": 0,
+  "gateway_fixture_reached": true
+}

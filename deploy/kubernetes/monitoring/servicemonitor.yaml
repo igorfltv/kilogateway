@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: y-ai-gateway
+spec:
+  namespaceSelector:
+    matchNames:
+    - y-ai
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: y-ai-gateway
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s

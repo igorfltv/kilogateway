@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: y-ai-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: y-ai-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: y-ai-worker
+    spec:
+      serviceAccountName: y-ai
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+      - name: schema-ready
+        image: y-ai-gateway
+        args:
+        - python
+        - -m
+        - gateway.wait_schema
+        envFrom:
+        - configMapRef:
+            name: y-ai-config
+        - secretRef:
+            name: y-ai-secrets
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: '2'
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      containers:
+      - name: worker
+        image: y-ai-gateway
+        args:
+        - python
+        - -m
+        - gateway.worker
+        envFrom:
+        - configMapRef:
+            name: y-ai-config
+        - secretRef:
+            name: y-ai-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: '2'
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        env:
+        - name: DB_POOL_SIZE
+          value: '4'
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: y-ai-worker

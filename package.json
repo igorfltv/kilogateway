@@ -1,0 +1,18 @@
+{
+  "name": "company-ai-gateway-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "plugin:build": "pnpm --filter @company/kilo-auth build",
+    "plugin:test": "pnpm --filter @company/kilo-auth test",
+    "plugin:pack": "pnpm --dir plugin pack --pack-destination ../artifacts/releases"
+  },
+  "devDependencies": {
+    "@kilocode/cli": "7.8.14",
+    "@types/node": "22.14.1",
+    "jsonc-parser": "3.3.1",
+    "node": "24.14.0",
+    "typescript": "5.8.3"
+  }
+}

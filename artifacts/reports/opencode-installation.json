@@ -1,0 +1,11 @@
+{
+  "opencode_version": "opencode v2.0.26",
+  "normal_config": "PASS",
+  "default_model": "y.ai/deepseek/deepseek-v4.1-flash-1017",
+  "open_browser": true,
+  "installer_idempotent": "PASS",
+  "native_yai_accounts": 0,
+  "existing_kilo_login_present": true,
+  "shared_package_separate_v2_entrypoint": true,
+  "cli_provider_flag_compatibility": true
+}

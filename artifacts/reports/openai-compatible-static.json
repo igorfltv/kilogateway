@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "provider": "openai-compatible",
+  "credential_mode": "static",
+  "synthetic_prompts_only": true,
+  "isolated_database_schema": true,
+  "models": {
+    "deepseek/deepseek-v4.1-flash-1017": {
+      "json": "PASS",
+      "sse": "PASS"
+    },
+    "qwen/qwen3.6-35b-a3b": {
+      "json": "PASS",
+      "sse": "PASS"
+    }
+  },
+  "checks": {
+    "authenticated_generic_catalog": "PASS",
+    "real_device_flow_and_gateway_exchange_without_management_key": "PASS",
+    "real_static_key_json_and_sse:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "real_static_key_json_and_sse:qwen/qwen3.6-35b-a3b": "PASS",
+    "no_per_user_upstream_key_or_allocation": "PASS",
+    "gateway_credential_revoked": "PASS"
+  },
+  "provider_reported_cost_usd": 0.00046185,
+  "owned_upstream_key_deleted": true,
+  "isolated_schema_removed": true,
+  "regular_kilo_state_preserved": true
+}

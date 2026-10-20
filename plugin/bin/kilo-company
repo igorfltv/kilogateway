@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+project_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+profile_dir="$project_dir/.local/company-cli"
+config_path="$profile_dir/config/kilo/kilo.json"
+mkdir -p "$profile_dir" "$profile_dir/config" "$profile_dir/data" "$profile_dir/state" "$profile_dir/cache"
+chmod 700 "$profile_dir"
+if [ ! -f "$config_path" ]; then
+  (cd "$project_dir" && PYTHONPATH=gateway/src:. .venv/bin/python tools/kilo_config.py --output "$config_path")
+fi
+# Configuration and all native credentials/state are scoped to this project profile.
+# Use the validated public endpoints from its config instead of inherited overrides.
+exec env -u KILO_CONFIG -u KILO_CONFIG_CONTENT -u KILO_CONFIG_DIR \
+  -u OPENCODE_CONFIG -u OPENCODE_CONFIG_CONTENT -u OPENCODE_CONFIG_DIR \
+  -u COMPANY_GATEWAY_URL -u COMPANY_OIDC_ISSUER -u COMPANY_ALLOW_DEV_HTTP \
+  XDG_CONFIG_HOME="$profile_dir/config" XDG_DATA_HOME="$profile_dir/data" \
+  XDG_STATE_HOME="$profile_dir/state" XDG_CACHE_HOME="$profile_dir/cache" \
+  KILO_DISABLE_DEFAULT_PLUGINS=true KILO_DISABLE_MODELS_FETCH=true \
+  "$project_dir/node_modules/.bin/kilo" "$@"

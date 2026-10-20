@@ -1,0 +1,21 @@
+{
+  "python_tests": 51,
+  "node_tests": 16,
+  "typescript_build": "PASS",
+  "frozen_dependencies": "PASS",
+  "docker_build": "PASS",
+  "migration": "PASS",
+  "native_fake_cycle": "PASS",
+  "live_openrouter_cycle": "PASS",
+  "live_models": [
+    "deepseek/deepseek-v4.1-flash-1017",
+    "qwen/qwen3.6-35b-a3b"
+  ],
+  "live_key_cleanup": "PASS",
+  "regular_kilo_state_preserved": true,
+  "handoff": "PASS",
+  "status": "PASS",
+  "standalone_server_unit_tests": 35,
+  "standalone_plugin_install": "PASS",
+  "endpoint_profile_export": "PASS"
+}

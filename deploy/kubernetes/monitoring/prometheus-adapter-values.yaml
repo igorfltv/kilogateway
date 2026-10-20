@@ -1,0 +1,13 @@
+rules:
+  custom:
+  - seriesQuery: yai_http_inflight{namespace!="",pod!=""}
+    resources:
+      overrides:
+        namespace:
+          resource: namespace
+        pod:
+          resource: pod
+    name:
+      matches: ^yai_http_inflight$
+      as: yai_http_inflight
+    metricsQuery: max(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)

@@ -1,0 +1,13 @@
+{
+  "models": [
+    "deepseek/deepseek-v4.1-flash-1017",
+    "qwen/qwen3.6-35b-a3b"
+  ],
+  "unrelatedConfigPreserved": true,
+  "installedKiloModels": "PASS",
+  "pythonTests": 41,
+  "pluginTests": 9,
+  "installerTests": 5,
+  "realOpenRouterInference": "NOT TESTED",
+  "localInference": "FAKE"
+}

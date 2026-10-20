@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "command": "opencode auth login --provider y.ai",
+  "checks": {
+    "exact_login_command_and_real_device_flow": "PASS",
+    "native_v2_credential_contains_gateway_key_only": "PASS",
+    "gateway_authorization": "PASS",
+    "real_native_run:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "real_native_run:qwen/qwen3.6-35b-a3b": "PASS",
+    "native_v2_plugin_registry_active": "PASS",
+    "native_v2_model_catalog": "PASS",
+    "native_logout_and_separate_gateway_revoke": "PASS"
+  },
+  "models": {
+    "deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "qwen/qwen3.6-35b-a3b": "PASS"
+  },
+  "isolated_client_state": true,
+  "synthetic_prompts_only": true,
+  "opencode_version": "opencode v2.0.26",
+  "owned_upstream_keys_deleted": true,
+  "regular_kilo_state_preserved": true
+}

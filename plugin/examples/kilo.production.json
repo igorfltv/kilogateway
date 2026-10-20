@@ -1,0 +1,60 @@
+{
+  "$schema": "https://kilo.ai/config.json",
+  "plugin": [
+    [
+      "@company/kilo-auth@0.1.0",
+      {
+        "issuer": "https://sso.example.org/realms/company",
+        "gateway": "https://ai.example.org/gateway",
+        "clientId": "kilo-cli",
+        "dev": false,
+        "openBrowser": true,
+        "oidcAllowedOrigins": []
+      }
+    ]
+  ],
+  "provider": {
+    "y.ai": {
+      "name": "Y.AI",
+      "npm": "@ai-sdk/openai-compatible@2.0.48",
+      "options": {
+        "baseURL": "https://ai.example.org/gateway/v1"
+      },
+      "models": {
+        "deepseek/deepseek-v4.1-flash-1017": {
+          "name": "DeepSeek V4.1 Flash 1017",
+          "tool_call": true,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 262144,
+            "output": 4096
+          }
+        },
+        "qwen/qwen3.6-35b-a3b": {
+          "name": "Qwen3.6 35B A3B",
+          "tool_call": true,
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "limit": {
+            "context": 262144,
+            "output": 4096
+          }
+        }
+      }
+    }
+  },
+  "model": "y.ai/deepseek/deepseek-v4.1-flash-1017"
+}

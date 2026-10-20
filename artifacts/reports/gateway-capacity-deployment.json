@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "migration": "002",
+  "historical_usage_preserved": true,
+  "database_backup_created": true,
+  "image": "sha256:4f4bde93a035360ec0936923413dc4e0bee7393a99d7b4a5e431d7d7962beb9c",
+  "image_platform": "linux/arm64",
+  "nonroot_readonly_capdrop_image_check": "PASS",
+  "health_ready": "PASS",
+  "prometheus_metrics_secret_free": "PASS",
+  "source_sha256": "39e109fa5dba3b05ae296a35e458982367c15174190e6f0dbad7823997961739",
+  "python_unit_tests": 54,
+  "postgresql_component_tests": 20,
+  "kubernetes_cluster_deployment": "NOT_TESTED",
+  "load_sustained_report": "gateway-load.json",
+  "load_final_source_report": "gateway-load-final.json",
+  "graceful_lifecycle_report": "gateway-lifecycle.json",
+  "kubernetes_manifests_report": "kubernetes-validation.json"
+}

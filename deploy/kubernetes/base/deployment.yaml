@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: y-ai-gateway
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  progressDeadlineSeconds: 600
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: y-ai-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: y-ai-gateway
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8000'
+        prometheus.io/path: /metrics
+    spec:
+      serviceAccountName: y-ai
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 185
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+      - name: schema-ready
+        image: y-ai-gateway
+        args:
+        - python
+        - -m
+        - gateway.wait_schema
+        envFrom:
+        - configMapRef:
+            name: y-ai-config
+        - secretRef:
+            name: y-ai-secrets
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: '2'
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels: *id001
+      containers:
+      - name: gateway
+        image: y-ai-gateway
+        args:
+        - uvicorn
+        - gateway.app:create_app
+        - --factory
+        - --host
+        - 0.0.0.0
+        - --port
+        - '8000'
+        - --workers
+        - '1'
+        - --no-access-log
+        - --timeout-keep-alive
+        - '30'
+        - --timeout-graceful-shutdown
+        - '170'
+        - --backlog
+        - '2048'
+        envFrom:
+        - configMapRef:
+            name: y-ai-config
+        - secretRef:
+            name: y-ai-secrets
+        resources:
+          requests:
+            cpu: '1'
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 2Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        ports:
+        - name: http
+          containerPort: 8000
+        startupProbe:
+          httpGet:
+            path: /health/ready
+            port: http
+          periodSeconds: 2
+          failureThreshold: 60
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: http
+          periodSeconds: 5
+          failureThreshold: 2
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: http
+          periodSeconds: 10
+          failureThreshold: 3
+          timeoutSeconds: 2
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - python
+              - -m
+              - gateway.drain

@@ -1,0 +1,11 @@
+{
+  "source_manifests": "PASS",
+  "standalone_server_frozen_install": "PASS",
+  "standalone_server_unit_tests": 54,
+  "standalone_plugin_install": "PASS",
+  "standalone_plugin_import": "PASS",
+  "client_only_installer": "PASS",
+  "client_defaults_and_other_providers_preserved": "PASS",
+  "opencode_v2_plugin_import": "PASS",
+  "opencode_v2_config_merge": "PASS"
+}

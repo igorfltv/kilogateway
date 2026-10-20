@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "provider_mode": "openai-compatible",
+  "credential_mode": "openrouter-managed",
+  "inference_adapter": "OpenAICompatibleAdapter",
+  "credential_namespace": "openrouter-managed",
+  "gateway": "http://localhost:18000",
+  "inference_base": "https://openrouter.ai/api/v1",
+  "gateway_readiness": "PASS",
+  "current_gateway_credential": "PASS",
+  "default_model_permissions": "PASS",
+  "normal_kilo_opencode_settings_and_kilo_auth_preserved": true,
+  "current_user_inference": "AVAILABLE",
+  "current_user_allocated_usd": 1.25,
+  "current_user_allocation_limit_usd": 1.25,
+  "current_user_upstream_key_expired": false,
+  "unit_tests": 54,
+  "postgresql_component_tests": 20,
+  "native_opencode_report": "opencode-native.json",
+  "static_key_live_report": "openai-compatible-static.json",
+  "native_kilo_report": "active-inference.json"
+}

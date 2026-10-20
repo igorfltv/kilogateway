@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: y-ai-gateway
+spec:
+  groups:
+  - name: y-ai-gateway
+    rules:
+    - alert: YAIHighAdmissionRejections
+      expr: sum(rate(yai_http_admission_rejected_total[5m])) > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: Gateway admission rejects requests; inspect capacity and upstream
+          latency
+    - alert: YAIHighServerErrorRatio
+      expr: sum(rate(yai_http_requests_total{status=~"5.."}[5m])) / clamp_min(sum(rate(yai_http_requests_total[5m])),
+        1) > 0.01
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: More than 1 percent of gateway responses fail
+    - alert: YAIDatabasePoolSaturated
+      expr: yai_db_connections_checked_out >= 12
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: API database pool remains saturated

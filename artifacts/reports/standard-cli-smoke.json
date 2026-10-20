@@ -1,0 +1,11 @@
+{
+  "command": "kilo auth login --provider company-ai",
+  "cli": "/opt/homebrew/bin/kilo",
+  "kilo_version": "7.8.15",
+  "global_profile": true,
+  "requires_method_flag": false,
+  "real_device_flow": "PASS",
+  "native_storage_and_me": "PASS",
+  "other_credentials_preserved": "PASS",
+  "temporary_auth_cleanup": "PASS"
+}

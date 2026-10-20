@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: y-ai-gateway
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: 'off'
+    nginx.ingress.kubernetes.io/proxy-request-buffering: 'off'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '150'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '150'
+    nginx.ingress.kubernetes.io/proxy-body-size: 1m
+    nginx.ingress.kubernetes.io/proxy-next-upstream: 'off'
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - ai.example.org
+    secretName: y-ai-tls
+  rules:
+  - host: ai.example.org
+    http:
+      paths:
+      - path: /v1
+        pathType: Prefix
+        backend:
+          service:
+            name: y-ai-gateway
+            port:
+              name: http
+      - path: /auth/cli
+        pathType: Prefix
+        backend:
+          service:
+            name: y-ai-gateway
+            port:
+              name: http
+      - path: /me
+        pathType: Exact
+        backend:
+          service:
+            name: y-ai-gateway
+            port:
+              name: http

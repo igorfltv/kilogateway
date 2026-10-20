@@ -1,0 +1,9 @@
+{
+  "personal_allocation_limit_usd": 1.25,
+  "previous_allocation_preserved": true,
+  "models": {
+    "deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "qwen/qwen3.6-35b-a3b": "PASS"
+  },
+  "status": "PASS"
+}

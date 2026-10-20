@@ -1,0 +1,158 @@
+{
+  "status": "PASS",
+  "workers": 3,
+  "users": 200,
+  "historical_records": 100000,
+  "generator_clients": 8,
+  "authz_max_staleness_seconds": 30,
+  "admission_limit_per_worker": 512,
+  "db_pool_per_worker": 12,
+  "upstream": "synthetic-loopback-only",
+  "identity": "synthetic-status-fixture; preissued gateway credentials",
+  "hardware": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "cpu_count": 15
+  },
+  "scenarios": [
+    {
+      "mode": "json",
+      "target_rps": 100,
+      "offered": 6000,
+      "duration_seconds": 60,
+      "upstream_delay_seconds": 0.04,
+      "successes": 6000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 100.0,
+      "latency_p50_ms": 53.6,
+      "latency_p95_ms": 59.248,
+      "latency_p99_ms": 67.398,
+      "ttfb_p95_ms": 59.238,
+      "scheduler_lag_p99_ms": 2.05,
+      "generator_cpu_seconds": 5.449,
+      "exception_types": {},
+      "status_counts": {
+        "200": 6000
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "json",
+      "target_rps": 200,
+      "offered": 12000,
+      "duration_seconds": 60,
+      "upstream_delay_seconds": 0.04,
+      "successes": 12000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 200.08,
+      "latency_p50_ms": 56.955,
+      "latency_p95_ms": 64.245,
+      "latency_p99_ms": 85.58,
+      "ttfb_p95_ms": 64.229,
+      "scheduler_lag_p99_ms": 1.034,
+      "generator_cpu_seconds": 10.239,
+      "exception_types": {},
+      "status_counts": {
+        "200": 12000
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "json",
+      "target_rps": 300,
+      "offered": 18000,
+      "duration_seconds": 60,
+      "upstream_delay_seconds": 0.04,
+      "successes": 18000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 300.0,
+      "latency_p50_ms": 62.444,
+      "latency_p95_ms": 68.728,
+      "latency_p99_ms": 96.659,
+      "ttfb_p95_ms": 68.717,
+      "scheduler_lag_p99_ms": 0.706,
+      "generator_cpu_seconds": 17.754,
+      "exception_types": {},
+      "status_counts": {
+        "200": 18000
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "sse",
+      "target_rps": 100,
+      "offered": 6000,
+      "duration_seconds": 60,
+      "upstream_delay_seconds": 3.0,
+      "successes": 6000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 100.02,
+      "latency_p50_ms": 3013.038,
+      "latency_p95_ms": 3024.983,
+      "latency_p99_ms": 3031.881,
+      "ttfb_p95_ms": 20.929,
+      "scheduler_lag_p99_ms": 0.896,
+      "generator_cpu_seconds": 6.764,
+      "exception_types": {},
+      "status_counts": {
+        "200": 6000
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "sse",
+      "target_rps": 200,
+      "offered": 12000,
+      "duration_seconds": 60,
+      "upstream_delay_seconds": 3.0,
+      "successes": 12000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 200.0,
+      "latency_p50_ms": 3018.891,
+      "latency_p95_ms": 3032.54,
+      "latency_p99_ms": 3057.403,
+      "ttfb_p95_ms": 24.874,
+      "scheduler_lag_p99_ms": 0.948,
+      "generator_cpu_seconds": 16.335,
+      "exception_types": {},
+      "status_counts": {
+        "200": 12000
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "sse",
+      "target_rps": 300,
+      "offered": 18000,
+      "duration_seconds": 60,
+      "upstream_delay_seconds": 3.0,
+      "successes": 18000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 299.96,
+      "latency_p50_ms": 3030.067,
+      "latency_p95_ms": 3091.963,
+      "latency_p99_ms": 3208.674,
+      "ttfb_p95_ms": 64.065,
+      "scheduler_lag_p99_ms": 73.634,
+      "generator_cpu_seconds": 33.673,
+      "exception_types": {},
+      "status_counts": {
+        "200": 18000
+      },
+      "status": "PASS"
+    }
+  ],
+  "fixture": {
+    "chat_requests": 72000,
+    "active": 0,
+    "peak_active": 950,
+    "identity_checks": 2200
+  },
+  "accounting_consistent": true,
+  "isolated_schema_removed": true
+}

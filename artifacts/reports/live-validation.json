@@ -1,0 +1,55 @@
+{
+  "provider": "openrouter-managed",
+  "models": [
+    "deepseek/deepseek-v4.1-flash-1017",
+    "qwen/qwen3.6-35b-a3b"
+  ],
+  "checks": {
+    "isolated_gateway_ready": "PASS",
+    "public_model_catalog": "PASS",
+    "identity_without_roles_denied": "PASS",
+    "native_device_login_and_gateway_only_storage": "PASS",
+    "real_user_key_provisioned_and_inspected": "PASS",
+    "native_and_authenticated_model_catalogs": "PASS",
+    "json:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "sse:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "tool_roundtrip:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "native_run:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "json:qwen/qwen3.6-35b-a3b": "PASS",
+    "sse:qwen/qwen3.6-35b-a3b": "PASS",
+    "tool_roundtrip:qwen/qwen3.6-35b-a3b": "PASS",
+    "native_run:qwen/qwen3.6-35b-a3b": "PASS",
+    "rotation_old_key_deleted_new_key_serves_requests": "PASS",
+    "native_logout_and_server_device_revoke": "PASS",
+    "keycloak_disable_blocks_access_and_deletes_provider_key": "PASS",
+    "usage_and_secret_free_audit": "PASS"
+  },
+  "key_limit_usd": 0.1,
+  "planned_generations": 2,
+  "status": "PASS",
+  "kilo_version": "7.8.15",
+  "tool_response_fields": {
+    "deepseek/deepseek-v4.1-flash-1017": [
+      "content",
+      "reasoning",
+      "reasoning_details",
+      "refusal",
+      "role",
+      "tool_calls"
+    ],
+    "qwen/qwen3.6-35b-a3b": [
+      "content",
+      "reasoning",
+      "reasoning_details",
+      "refusal",
+      "role",
+      "tool_calls"
+    ]
+  },
+  "requests": 11,
+  "provider_reported_cost_usd": "0.00484987",
+  "test_identity_cleanup": "PASS",
+  "provider_key_cleanup": "PASS",
+  "isolated_schema_cleanup": "PASS",
+  "regular_kilo_state_preserved": true
+}

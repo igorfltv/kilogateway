@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: y-ai
+resources:
+- ../common
+- job.yaml
+images:
+- name: y-ai-gateway
+  newName: registry.example.org/y-ai/gateway
+  newTag: 0.1.0

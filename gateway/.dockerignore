@@ -1,0 +1,11 @@
+*
+!requirements.txt
+!src/
+!src/**
+!migrations/
+!migrations/**
+!alembic.ini
+**/__pycache__
+**/*.pyc
+!scripts/
+!scripts/*.py

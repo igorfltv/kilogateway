@@ -1,0 +1,83 @@
+{
+  "status": "PASS",
+  "workers": 1,
+  "users": 2,
+  "historical_records": 0,
+  "source_sha256": "417ca2915f04bb030d36563630a0b45b59ea4115638684280775f9fbe30c5565",
+  "generator_clients": 8,
+  "authz_max_staleness_seconds": 30,
+  "admission_limit_per_worker": 512,
+  "db_pool_per_worker": 12,
+  "upstream": "synthetic-loopback-only",
+  "identity": "synthetic-status-fixture; preissued gateway credentials",
+  "hardware": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "cpu_count": 15
+  },
+  "scenarios": [
+    {
+      "mode": "json",
+      "target_rps": 1,
+      "offered": 4,
+      "duration_seconds": 4,
+      "upstream_delay_seconds": 0.04,
+      "successes": 4,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 1.01,
+      "latency_p50_ms": 66.331,
+      "latency_p95_ms": 71.295,
+      "latency_p99_ms": 71.295,
+      "ttfb_p95_ms": 71.275,
+      "scheduler_lag_p99_ms": 2.094,
+      "generator_cpu_seconds": 0.009,
+      "exception_types": {},
+      "status_counts": {
+        "200": 4
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "sse",
+      "target_rps": 1,
+      "offered": 4,
+      "duration_seconds": 4,
+      "upstream_delay_seconds": 1.0,
+      "successes": 4,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 1.0,
+      "latency_p50_ms": 1022.823,
+      "latency_p95_ms": 1023.559,
+      "latency_p99_ms": 1023.559,
+      "ttfb_p95_ms": 17.728,
+      "scheduler_lag_p99_ms": 2.296,
+      "generator_cpu_seconds": 0.009,
+      "exception_types": {},
+      "status_counts": {
+        "200": 4
+      },
+      "status": "PASS"
+    }
+  ],
+  "disconnect_outcome": "disconnected",
+  "drain_status": 200,
+  "drain_inflight": 1,
+  "sigterm_stream_completed": true,
+  "api_exit_code": -15,
+  "lifecycle": {
+    "disconnect_accounted_without_refund": "PASS",
+    "drain_readiness": "PASS",
+    "admission_rejected_during_drain": "PASS",
+    "active_sse_completed_on_sigterm": "PASS"
+  },
+  "fixture": {
+    "chat_requests": 10,
+    "active": 0,
+    "peak_active": 2,
+    "identity_checks": 0
+  },
+  "accounting_consistent": true,
+  "isolated_schema_removed": true,
+  "source_unchanged": true
+}

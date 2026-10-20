@@ -1,0 +1,41 @@
+# Substitute certificate paths and private upstream/network through your deployment system.
+# Place limit_req_zone in the nginx http context.
+limit_req_zone $binary_remote_addr zone=machine_api:10m rate=10r/s;
+server {
+    listen 443 ssl;
+    server_name code.ai.company.com;
+    ssl_certificate /run/tls/fullchain.pem;
+    ssl_certificate_key /run/tls/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    client_max_body_size 1m;
+    # Do not log Authorization, cookies, bodies, prompts, completions, or query strings.
+    access_log off;
+    error_page 429 = @rate_limited;
+    location @rate_limited {
+        default_type application/json;
+        add_header Retry-After 1 always;
+        return 429 '{"error":{"code":"ingress_rate_limited","message":"ingress_rate_limited"}}';
+    }
+    location /admin/ {
+        # Replace with the exact operator network; never expose publicly.
+        allow 127.0.0.1;
+        deny all;
+        proxy_pass http://gateway:8000;
+        proxy_set_header Host $host;
+        proxy_set_header Authorization $http_authorization;
+    }
+    location / {
+        limit_req zone=machine_api burst=20 nodelay;
+        limit_req_status 429;
+        proxy_pass http://gateway:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header Authorization $http_authorization;
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 180s;
+        proxy_send_timeout 180s;
+        proxy_intercept_errors off;
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "global_config": "PASS",
+  "global_models": [
+    "y.ai/deepseek/deepseek-v4.1-flash-1017",
+    "y.ai/qwen/qwen3.6-35b-a3b"
+  ],
+  "command": "kilo auth login --provider y.ai",
+  "global_auth_empty": true,
+  "global_auth_unchanged": true,
+  "installer_migration_tests": 6,
+  "plugin_tests": 17,
+  "isolated_device_flow_and_both_fake_models": "PASS"
+}

@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "provider": "openai-compatible",
+  "gateway": "http://localhost:18000",
+  "auth_scope": "current-user",
+  "synthetic_prompts_only": true,
+  "checks": {
+    "current_login_and_real_user_key": "PASS",
+    "active_gateway_permissions_and_models": "PASS",
+    "json:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "sse:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "tool_roundtrip:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "native_kilo:deepseek/deepseek-v4.1-flash-1017": "PASS",
+    "json:qwen/qwen3.6-35b-a3b": "PASS",
+    "sse:qwen/qwen3.6-35b-a3b": "PASS",
+    "tool_roundtrip:qwen/qwen3.6-35b-a3b": "PASS",
+    "native_kilo:qwen/qwen3.6-35b-a3b": "PASS",
+    "direct_http_usage_accounting": "PASS"
+  },
+  "models": {
+    "deepseek/deepseek-v4.1-flash-1017": {
+      "json": "PASS",
+      "sse": "PASS",
+      "tools": "PASS",
+      "native_kilo": "PASS"
+    },
+    "qwen/qwen3.6-35b-a3b": {
+      "json": "PASS",
+      "sse": "PASS",
+      "tools": "PASS",
+      "native_kilo": "PASS"
+    }
+  },
+  "provider_key_limit_usd": 0.25,
+  "provider_key_expires_at": "2026-10-20T10:59:07.027525+00:00",
+  "kilo_version": "7.8.15",
+  "direct_http_requests": 8,
+  "direct_http_reported_cost_usd": 0.00068804,
+  "direct_http_costs_known": true,
+  "native_kilo_runs": 2,
+  "native_auth_unchanged": true
+}

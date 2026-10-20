@@ -1,0 +1,72 @@
+{
+  "status": "PASS",
+  "workers": 3,
+  "users": 200,
+  "historical_records": 100000,
+  "source_sha256": "9ac278370dce87b45ec9e744a9b5d066ad2a73a6889d1c535d845957ffc2a8b4",
+  "generator_clients": 8,
+  "authz_max_staleness_seconds": 30,
+  "admission_limit_per_worker": 512,
+  "db_pool_per_worker": 12,
+  "upstream": "synthetic-loopback-only",
+  "identity": "synthetic-status-fixture; preissued gateway credentials",
+  "hardware": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "cpu_count": 15
+  },
+  "scenarios": [
+    {
+      "mode": "json",
+      "target_rps": 300,
+      "offered": 9000,
+      "duration_seconds": 30,
+      "upstream_delay_seconds": 0.04,
+      "successes": 9000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 299.97,
+      "latency_p50_ms": 61.994,
+      "latency_p95_ms": 67.749,
+      "latency_p99_ms": 101.284,
+      "ttfb_p95_ms": 67.736,
+      "scheduler_lag_p99_ms": 0.711,
+      "generator_cpu_seconds": 8.881,
+      "exception_types": {},
+      "status_counts": {
+        "200": 9000
+      },
+      "status": "PASS"
+    },
+    {
+      "mode": "sse",
+      "target_rps": 300,
+      "offered": 9000,
+      "duration_seconds": 30,
+      "upstream_delay_seconds": 3.0,
+      "successes": 9000,
+      "client_dropped": 0,
+      "errors": 0,
+      "steady_completed_rps": 299.88,
+      "latency_p50_ms": 3025.981,
+      "latency_p95_ms": 3075.534,
+      "latency_p99_ms": 3163.194,
+      "ttfb_p95_ms": 47.907,
+      "scheduler_lag_p99_ms": 7.087,
+      "generator_cpu_seconds": 15.433,
+      "exception_types": {},
+      "status_counts": {
+        "200": 9000
+      },
+      "status": "PASS"
+    }
+  ],
+  "fixture": {
+    "chat_requests": 18000,
+    "active": 0,
+    "peak_active": 939,
+    "identity_checks": 400
+  },
+  "accounting_consistent": true,
+  "isolated_schema_removed": true,
+  "source_unchanged": true
+}

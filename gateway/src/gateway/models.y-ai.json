@@ -1,0 +1,18 @@
+[
+  {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "name": "DeepSeek V4.1 Flash 1017",
+    "upstream_id": "deepseek/deepseek-v4.1-flash-1017",
+    "context_length": 1048576,
+    "max_output_tokens": 393216,
+    "tools": true
+  },
+  {
+    "id": "qwen/qwen3.6-35b-a3b",
+    "name": "Qwen3.6 35B A3B",
+    "upstream_id": "qwen/qwen3.6-35b-a3b",
+    "context_length": 262144,
+    "max_output_tokens": 235929,
+    "tools": true
+  }
+]

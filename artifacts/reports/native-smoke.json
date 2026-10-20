@@ -1,0 +1,17 @@
+{
+  "kilo": "7.8.15",
+  "plugin": "0.1.0",
+  "provider": "fake",
+  "native_login": "PASS",
+  "command": "kilo auth login --provider y.ai",
+  "isolated_client_state": true,
+  "native_models": "PASS",
+  "models": [
+    "y.ai/deepseek/deepseek-v4.1-flash-1017",
+    "y.ai/qwen/qwen3.6-35b-a3b"
+  ],
+  "native_run": "PASS",
+  "gateway_only_storage": "PASS",
+  "local_logout": "PASS",
+  "server_revoke": "PASS"
+}

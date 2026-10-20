@@ -1,0 +1,84 @@
+name: company-ai-dev
+x-app: &app
+  build: ./gateway
+  image: company-ai-gateway:0.1.0-dev
+  env_file:
+    - .env
+    - ${YAI_EXTRA_SECRETS_FILE:-.env}
+  environment: &app-env
+    DATABASE_URL: postgresql+asyncpg://gateway:${POSTGRES_PASSWORD:?Run make dev-secrets}@postgres:5432/gateway
+    OIDC_INTERNAL_ORIGIN: http://keycloak:8080
+    FAKE_PROVIDER_URL: http://fake-provider:8090/v1
+    YAI_ENDPOINTS_FILE: /config/endpoints.env
+  volumes:
+    - ${YAI_ENDPOINTS_FILE:-./config/endpoints/dev-container.env}:/config/endpoints.env:ro
+  restart: unless-stopped
+services:
+  postgres:
+    image: postgres:17.5-bookworm
+    environment:
+      POSTGRES_USER: gateway
+      POSTGRES_DB: gateway
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run make dev-secrets}
+    ports: ["127.0.0.1:15432:5432"]
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gateway -d gateway"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.7
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USER:-dev-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:?Run make dev-secrets}
+      KC_HOSTNAME: http://localhost:28080
+      KC_HEALTH_ENABLED: "true"
+    ports: ["127.0.0.1:28080:8080"]
+    volumes:
+      - ./deploy/keycloak/company-realm.json:/opt/keycloak/data/import/company.json:ro
+      - ./deploy/keycloak/themes/y-ai:/opt/keycloak/themes/y-ai:ro
+      - keycloak:/opt/keycloak/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/9000; printf \"GET /health/ready HTTP/1.0\\r\\n\\r\\n\" >&3; cat <&3 | head -1 | grep -q 200'"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 40
+  fake-provider:
+    <<: *app
+    env_file: []
+    environment:
+      FAKE_MANAGEMENT_KEY: ${FAKE_MANAGEMENT_KEY:?Run make dev-secrets}
+      FAKE_STATE_FILE: /state/fake-keys.json
+    volumes: ["fake-provider:/state"]
+    command: ["uvicorn", "gateway.fake_provider:app", "--host", "0.0.0.0", "--port", "8090", "--no-access-log"]
+    ports: ["127.0.0.1:18090:8090"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  migrate:
+    <<: *app
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres: {condition: service_healthy}
+  gateway:
+    <<: *app
+    ports: ["127.0.0.1:18000:8000"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      keycloak: {condition: service_healthy}
+      fake-provider: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres:
+  keycloak:
+  fake-provider:

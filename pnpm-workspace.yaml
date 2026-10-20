@@ -1,0 +1,8 @@
+packages:
+  - plugin
+onlyBuiltDependencies:
+  - node
+  - node-bin-setup
+  - '@kilocode/cli'
+ignoredBuiltDependencies:
+  - msgpackr-extract
