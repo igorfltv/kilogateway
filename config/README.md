@@ -4,8 +4,10 @@
 
 | Файл | Использование |
 |---|---|
-| `endpoints/openai-compatible-container.env` | Активный default: generic inference в Compose, пользовательские OpenRouter keys сохранены |
-| `endpoints/openai-compatible-local.env` | Тот же режим для host-side Python |
+| `endpoints/inference-container.env.example` | Шаблон обычного OpenAI-compatible upstream в Compose, static inference key |
+| `endpoints/inference-local.env.example` | Тот же режим для host-side Python |
+| `endpoints/openai-compatible-container.env` | Отдельный managed OpenRouter dev-профиль с generic inference transport |
+| `endpoints/openai-compatible-local.env` | Тот же managed режим для host-side Python |
 | `endpoints/dev.env` | Host tools и экспорт для локального FAKE-стенда |
 | `endpoints/dev-container.env` | Тот же стенд внутри Docker: internal OIDC/fake routes |
 | `endpoints/openrouter.env` | Изолированная live-валидация с настоящим OpenRouter |
@@ -13,6 +15,35 @@
 | `endpoints/openrouter-local.env` | Те же реальные модели для host-side сервера, без внутреннего Docker OIDC route |
 | `endpoints/production.env.example` | Заготовка target environment, без настоящих addresses/secrets |
 | `secrets.env.example` | Шаблон серверных секретов; реальные значения — в отдельном ignored/private файле |
+
+## Параметры ключей и паролей
+
+В Git хранятся только названия параметров, пустые optional значения и явные `REPLACE_*` placeholders. Gateway отклоняет незаполненные secret placeholders при старте. Рабочие значения находятся в приватном `.env`/`.local/secrets/*.env`, environment или Kubernetes Secret. Публичные endpoint/client configs не принимают secret поля.
+
+| Параметр | Где получить/задать | Где используется |
+|---|---|---|
+| `PROVIDER_API_KEY` | Inference service key оператора | Обычный `openai-compatible` + `static`; не management key |
+| `PROVIDER_CATALOG_API_KEY` | Optional отдельный catalog key | Только при отдельной authenticated catalog base |
+| `OPENROUTER_MANAGEMENT_KEY` | OpenRouter management account оператора | Только managed dev lifecycle/платные live tests |
+| `KEYCLOAK_STATUS_CLIENT_SECRET` | Credentials confidential client в Keycloak | Чтение enabled/roles; не нужен CLI |
+| `DATABASE_URL` | DB host/port/user/password/schema connection options | Host tools, API/worker или отдельный migrator credential |
+| `POSTGRES_PASSWORD` | Генерируется `make dev-secrets` | Только локальный Compose PostgreSQL |
+| `KC_ADMIN_USER`, `KC_ADMIN_PASSWORD` | Генерируются/настраиваются локально | Только dev Keycloak/bootstrap |
+| `DEV_USER_PASSWORD`, `DEV_DENIED_PASSWORD` | Генерируются локально | Dev `developer` и `denied` |
+| `FAKE_MANAGEMENT_KEY` | Генерируется локально | Только synthetic upstream |
+| `ENCRYPTION_KEY` | Base64 от 32 случайных bytes | Шифрование provider credentials; одинаков у всех replicas |
+| `ENCRYPTION_KEY_VERSION` | Версия encryption material | Меняется вместе с согласованной offline rotation |
+| `CREDENTIAL_HASH_KEY` | ≥32 случайных символов | Hash персональных gateway credentials |
+| `ADMIN_TOKEN` | ≥32 случайных символов | Внутренний admin API/drain; клиентам не выдаётся |
+
+```sh
+make dev-secrets      # новый приватный .env из ../.env.example; все dev passwords случайные
+make runtime-secrets  # .local/secrets/runtime.env: внутренние ключи генерируются, внешние остаются REPLACE
+```
+
+Обе команды отказываются заменять существующий файл. Для нового пути: `python3 tools/dev_secrets.py --kind runtime --output /secure/y-ai-runtime.env`. Перед запуском заполните внешние `DATABASE_URL`, `KEYCLOAK_STATUS_CLIENT_SECRET`, `PROVIDER_API_KEY` локальным редактором/secret manager. Не передавайте значения ключей в command-line аргументах и не помещайте их в tracked examples. Шаблоны только для upstream: `upstream-secrets.env.example` и `openrouter-secrets.env.example`. Для Kubernetes есть отдельный `migration-secrets.env.example`, содержащий только migrator DB URL.
+
+После изменения inference/IdP secret перезапустите API/worker. Encryption/hash keys сохраняются при обновлениях: простая замена делает сохранённые данные/credentials недоступными; используйте [ротацию](../docs/RUNBOOK.md). Текущие рабочие приватные файлы не включаются в Git или архивы поставки.
 
 Выбор: `YAI_SECRETS_FILE` (default `.env`), optional `YAI_EXTRA_SECRETS_FILE`, `YAI_ENDPOINTS_FILE`. При чтении Settings keyword overrides имеют приоритет, затем environment, затем endpoints-файл и secret files. Docker/server entrypoint сначала применяет выбранный публичный профиль к environment — это предотвращает сохранение старых публичных значений из legacy env_file. Не запускайте сервер с устаревшими публичными overrides.
 

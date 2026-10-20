@@ -4,17 +4,32 @@
 
 ## Установка
 
+Из репозитория с уже запущенным локальным стендом:
+
+```sh
+make install-opencode ENDPOINTS=config/endpoints/dev.env \
+  OPENCODE_BINARY=/absolute/path/to/native/opencode-v2.0.26
+export PATH="$HOME/.local/bin:$PATH"
+opencode auth login --provider y.ai
+```
+
+В браузере dev учётка — `developer`, пароль находится в приватном `.env` (`DEV_USER_PASSWORD`). Installer не скачивает runtime: native binary v2.0.26 нужно предоставить отдельно. Проверка версии выполняется в изолированном XDG profile. Обёртка/плагин и native runtime — разные файлы.
+
 Оператор передаёт публичный `opencode.y-ai.json`, plugin tarball и выбранный штатный OpenCode v2.0.26 runtime. Серверные секреты клиенту не передаются. После установки пакета:
 
 ```sh
+npm install /path/to/company-kilo-auth-0.1.0.tgz
 node node_modules/@company/kilo-auth/scripts/install_opencode.mjs \
   --source /path/to/opencode.y-ai.json \
   --local-plugin \
   --binary /path/to/native/opencode-v2.0.26 \
   --apply
+export PATH="$HOME/.local/bin:$PATH"
 opencode auth login --provider y.ai
 opencode
 ```
+
+Для target config оператор выполняет `YAI_SECRETS_FILE=/secure/runtime.env make opencode-config ENDPOINTS=/path/to/public-target.env`; пользователь получает только JSON и tarball. При занятом `~/.local/bin/opencode` выберите свободный `--bin-dir /path/to/client-bin` и добавьте его первым в PATH. Installer не заменяет посторонний executable. Пакет устанавливайте в постоянную директорию. [Полный flow и ожидаемые результаты](../docs/VALIDATION.md).
 
 Без `--apply` выполняется dry-run. Installer сохраняет чужие providers/plugins/agents/permissions и выбранную ранее default model; на новой установке выбирает первую Y.AI модель. При изменении существующего JSONC создаётся точная приватная копия в `.company-ai-backups/`. Native auth, история и сессии OpenCode не переписываются. Kilo config/auth также не затрагиваются.
 

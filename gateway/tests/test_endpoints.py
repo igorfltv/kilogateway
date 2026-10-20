@@ -14,6 +14,20 @@ from providers.openrouter import OpenRouterAdapter
 from gateway.profile import public_profile
 
 
+@pytest.mark.parametrize("field,value", [
+    ("database_url", "postgresql+asyncpg://runtime:REPLACE@db.example/y_ai"),
+    ("keycloak_status_client_secret", "REPLACE_VIA_SECRET_MECHANISM"),
+    ("provider_api_key", "REPLACE_WITH_INFERENCE_SERVICE_KEY"),
+    ("openrouter_management_key", "REPLACE_WITH_OPENROUTER_MANAGEMENT_KEY"),
+    ("encryption_key", "REPLACE_WITH_BASE64_32_RANDOM_BYTES"),
+    ("credential_hash_key", "REPLACE_WITH_32_OR_MORE_RANDOM_CHARACTERS"),
+    ("admin_token", "REPLACE_WITH_32_OR_MORE_RANDOM_CHARACTERS"),
+])
+def test_secret_templates_cannot_start_a_gateway(settings, field, value):
+    with pytest.raises(ValidationError, match="unconfigured placeholder"):
+        Settings(_env_file=None, **{**settings.model_dump(), field: value})
+
+
 async def test_separate_management_inference_and_catalog_endpoints():
     seen = []
 

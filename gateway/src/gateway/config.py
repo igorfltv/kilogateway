@@ -118,6 +118,11 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def valid(self):
         import re
+        for field in ("database_url", "keycloak_status_client_secret", "provider_api_key", "provider_catalog_api_key",
+                      "openrouter_management_key", "fake_management_key", "encryption_key", "credential_hash_key", "admin_token"):
+            value = getattr(self, field).get_secret_value()
+            if re.search(r"(?:^|[:/@])(?:REPLACE(?:_[A-Z0-9]+)*|CHANGE_ME|CHANGEME)(?=$|[:/@?])", value):
+                raise ValueError(f"{field} contains an unconfigured placeholder")
         if not re.fullmatch(r"[a-z][a-z0-9_]{0,62}", self.database_schema):
             raise ValueError("invalid database schema")
         if self.profile not in {"production", "test", "dev"}:

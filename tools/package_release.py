@@ -65,15 +65,16 @@ with tarfile.open(plugin) as tar:
         if member.isfile():
             check(tar.extractfile(member).read())
 server=archive("y-ai-gateway",tree("gateway")+tree("config")+tree("deploy")+
+    [ROOT/"LICENSE"]+
     [ROOT/"docs"/p for p in ("openapi.json","THREAT_MODEL.md","CORPORATE_PROVIDER_CONTRACT.md",
-        "RUNBOOK.md","ARCHITECTURE.md","SOURCES.md","TEST_REPORT.md")]+
+        "RUNBOOK.md","ARCHITECTURE.md","SOURCES.md","TEST_REPORT.md","LOCAL_SETUP.md","KEYCLOAK.md","VALIDATION.md")]+
     [ROOT/"artifacts/reports"/p for p in ("gateway-load.json","gateway-load-final.json","gateway-lifecycle.json",
         "kubernetes-validation.json","gateway-capacity-deployment.json")],
     "# Y.AI Gateway\n\nServer-only delivery. Start with gateway/README.md and config/README.md. "
     "Python source, pinned dependencies, Dockerfile, migrations and server operations are in gateway/. "
     "The Kilo plugin and management credentials are not included.\n")
 workspace=archive("y-ai-workspace",sum((tree(d) for d in ("gateway","plugin","tools","config","deploy","docs")),[])+
-    [ROOT/p for p in ("README.md","Makefile","package.json","pnpm-lock.yaml","pnpm-workspace.yaml","compose.yaml",".gitignore")]+
+    [ROOT/p for p in ("README.md","LICENSE",".env.example","Makefile","package.json","pnpm-lock.yaml","pnpm-workspace.yaml","compose.yaml",".gitignore")]+
     [ROOT/"artifacts/reports/live-validation.json",ROOT/"artifacts/reports/validation-summary.json",ROOT/"artifacts/reports/y-ai-provider-id.json",ROOT/"artifacts/reports/active-inference.json",ROOT/"artifacts/reports/openrouter-activation.json",ROOT/"artifacts/reports/opencode-native.json",ROOT/"artifacts/reports/opencode-transport-native.json",ROOT/"artifacts/reports/opencode-installation.json",
      ROOT/"artifacts/reports/handoff-checks.json",ROOT/"artifacts/reports/native-smoke.json",
      ROOT/"artifacts/reports/openai-compatible-static.json",ROOT/"artifacts/reports/openai-compatible-default.json",

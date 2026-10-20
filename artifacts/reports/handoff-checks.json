@@ -1,7 +1,7 @@
 {
   "source_manifests": "PASS",
   "standalone_server_frozen_install": "PASS",
-  "standalone_server_unit_tests": 54,
+  "standalone_server_unit_tests": 61,
   "standalone_plugin_install": "PASS",
   "standalone_plugin_import": "PASS",
   "client_only_installer": "PASS",

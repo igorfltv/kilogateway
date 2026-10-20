@@ -129,3 +129,10 @@ Gateway пересобран и развёрнут с `opencode-cli` в exchange
 Известные практические границы: conservative accounting units вместо точной токенизации/денежного hard cap; сумма allocations не освобождается автоматически после rotation/ambiguity; пустой provider lookup требует operator reconciliation. Любой uncertain DB commit сверяется с provider before manual recovery. Это описано в ADR/runbook, не скрывается успешными fixture тестами.
 
 Локальные diagnostic logs и native auth находятся только в ignored `.local/`; management credential — в `.local/secrets/openrouter.env` с правами 0600; исходный архив исключает `.env`, `.local`, caches, node_modules и реальные credentials. Secret scan сверяет исходники и содержимое plugin tarball с локальными secret values. Архив содержит manifest SHA-256 и отдельный SHA256SUMS.
+
+
+## Инструкции установки и конфигурация без встроенных ключей (2026-10-20)
+
+Добавлены пошаговые local/Kubernetes/Keycloak/client/flow guides и публичные env templates. `make dev-secrets`/`make runtime-secrets` создают приватные файлы 0600 и не заменяют существующие. Внешние DB/IdP/inference credentials остаются изменяемыми параметрами; незаполненные secret placeholders отклоняются. Локальная рабочая конфигурация не изменялась.
+
+Проверены 63 unit/config tests, 20 PostgreSQL component tests, 26 клиентских тестов, Ruff, ссылки документации, инициализация обеих конфигураций с нуля и `docker compose config --quiet`. Strict Kubernetes validation: 28 объектов, 0 invalid/errors/skipped. Новые платные inference calls и deployment в целевой кластер в этой проверке не выполнялись. Результаты предыдущих native/live/load прогонов остаются отдельными историческими доказательствами.

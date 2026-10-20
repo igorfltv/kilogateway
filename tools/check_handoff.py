@@ -2,6 +2,7 @@
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -49,8 +50,10 @@ def main():
     command(["uv","sync","--frozen","--python",sys.executable],backend)
     output=command([backend/".venv/bin/python","-m","pytest","-q","tests/test_unit.py","tests/test_oidc.py",
                     "tests/test_catalog.py","tests/test_endpoints.py","tests/test_openai_compatible.py","tests/test_runtime.py"],backend,{"PYTHONPATH":str(backend/"src")})
-    assert "54 passed" in output
-    print("PASS: standalone server frozen install and 54 isolated unit tests",flush=True)
+    passed = re.search(r"(\d+) passed", output)
+    assert passed and "failed" not in output
+    test_count = int(passed[1])
+    print(f"PASS: standalone server frozen install and {test_count} isolated unit tests",flush=True)
     client=work/"client"
     client.mkdir()
     (client/"package.json").write_text('{"private":true}')
@@ -87,7 +90,7 @@ def main():
         "if(!result.content.includes('// KEEP')||!result.content.includes('other/default'))process.exit(1)",
         (package/"opencode/server.js").as_uri(),(package/"scripts/install_opencode.mjs").as_uri(),package/"examples/opencode.production.json"],client)
     print("PASS: packaged OpenCode v2 entrypoint and standalone plural-schema installer",flush=True)
-    report={"source_manifests":"PASS","standalone_server_frozen_install":"PASS","standalone_server_unit_tests":54,
+    report={"source_manifests":"PASS","standalone_server_frozen_install":"PASS","standalone_server_unit_tests":test_count,
             "standalone_plugin_install":"PASS","standalone_plugin_import":"PASS","client_only_installer":"PASS",
             "client_defaults_and_other_providers_preserved":"PASS","opencode_v2_plugin_import":"PASS","opencode_v2_config_merge":"PASS"}
     (ROOT/"artifacts/reports/handoff-checks.json").write_text(json.dumps(report,indent=2)+"\n")

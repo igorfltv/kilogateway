@@ -3,6 +3,7 @@
 *.env
 !config/endpoints/*.env
 !config/secrets.env.example
+!config/*-secrets.env.example
 !deploy/kubernetes/common/gateway.env
 !.env.example
 .venv/

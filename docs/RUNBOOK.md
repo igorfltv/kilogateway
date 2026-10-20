@@ -1,5 +1,7 @@
 # Runbook
 
+Установка с нуля: [локальный стенд](LOCAL_SETUP.md), [Kubernetes](../deploy/kubernetes/README.md), [Keycloak](KEYCLOAK.md), [клиент Kilo](../plugin/README.md), [OpenCode v2](../plugin/OPENCODE.md), [проверка flow](VALIDATION.md). Ниже — эксплуатация, recovery и ротация. Все ключи задаются через [приватные параметры](../config/README.md#параметры-ключей-и-паролей).
+
 ## Локальный стенд
 
 Команды выполняются из корня. `make install` использует `uv sync --frozen` и `pnpm@10.33.0 install --frozen-lockfile`. `make up` собирает собственный image `company-ai-gateway:0.1.0-dev`, запускает PostgreSQL, Keycloak, fake provider, migration job и gateway. После `make bootstrap` доступны dev пользователи. При недоступном Docker это ошибка precondition, а не результат модели.

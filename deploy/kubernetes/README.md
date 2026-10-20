@@ -26,6 +26,51 @@ Base HPA использует CPU/memory. Для SSE ожидание upstream �
 
 ## Подготовка окружения
 
+Полный порядок первой установки приведён ниже. Все `REPLACE`, примерные домены, image reference и credentials заполняет оператор. В репозитории нет рабочего inference/admin/IdP key. Клиенты получают только публичный config и входят через SSO.
+
+### PostgreSQL и Keycloak
+
+В отдельной БД создайте DDL и runtime роли. Пример для **новой** PostgreSQL БД из административной `psql` сессии; существующую БД/роли не пересоздавайте:
+
+```sql
+CREATE ROLE y_ai_migrator LOGIN;
+CREATE ROLE y_ai_runtime LOGIN;
+CREATE DATABASE y_ai OWNER y_ai_migrator;
+\password y_ai_migrator
+\password y_ai_runtime
+\connect y_ai
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+ALTER SCHEMA public OWNER TO y_ai_migrator;
+GRANT CONNECT ON DATABASE y_ai TO y_ai_runtime;
+GRANT USAGE ON SCHEMA public TO y_ai_runtime;
+ALTER DEFAULT PRIVILEGES FOR ROLE y_ai_migrator IN SCHEMA public
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO y_ai_runtime;
+ALTER DEFAULT PRIVILEGES FOR ROLE y_ai_migrator IN SCHEMA public
+  GRANT USAGE, SELECT ON SEQUENCES TO y_ai_runtime;
+ALTER DEFAULT PRIVILEGES FOR ROLE y_ai_migrator IN SCHEMA public
+  GRANT EXECUTE ON FUNCTIONS TO y_ai_runtime;
+```
+
+`\password` запрашивает пароль интерактивно, без включения plaintext в SQL history. Для существующей schema дополнительно выдайте аналогичные GRANT на уже созданные tables/sequences/functions. Runtime не получает DDL. Пароль в `DATABASE_URL` должен быть URL-encoded. Установите DB TLS CA и проверьте `ssl=verify-full`; тот же CA монтируется migrator/API/worker и задаётся для asyncpg через `PGSSLROOTCERT`. Не отключайте TLS.
+
+Настройте [Keycloak по шагам](../../docs/KEYCLOAK.md): public Device Flow client, audience, две realm roles и отдельный read-only service client. Создайте отдельного тестового пользователя с разрешёнными ролями для acceptance. Production bootstrap с dev admin/password не запускается.
+
+### Приватные конфигурации и ключи
+
+Из корня репозитория:
+
+```sh
+make runtime-secrets
+cp deploy/kubernetes/migration-secrets.env.example .local/secrets/migration.env
+chmod 600 .local/secrets/runtime.env .local/secrets/migration.env
+```
+
+`runtime-secrets` создаёт случайные encryption/hash/admin keys и сохраняет файл с mode 0600. При повторном запуске существующие значения не заменяются. Через локальный редактор заполните в `runtime.env` `DATABASE_URL` runtime-роли, `KEYCLOAK_STATUS_CLIENT_SECRET`, `PROVIDER_API_KEY` и при необходимости `PROVIDER_CATALOG_API_KEY`. В `migration.env` заполните только `DATABASE_URL` migrator-роли. Внешние database/IdP/inference credentials генератор не выдумывает: их получают у соответствующих администраторов. [Все secret параметры](../../config/README.md#параметры-ключей-и-паролей).
+
+Храните эти два файла в secret manager или приватном каталоге оператора. Новые внутренние ключи создаются один раз на установку и сохраняются между replicas, релизами и backup/restore. Перегенерация encryption/hash keys для существующей БД — отдельная [процедура ротации](../../docs/RUNBOOK.md), а не способ обновить API key.
+
+### Публичные параметры и образ
+
 1. Скопируйте манифесты в deployment repository или создайте свой Kustomize overlay. В `common/gateway.env` замените gateway/issuer/inference URLs; при других моделях смонтируйте утверждённый model catalog и задайте `MODEL_CATALOG_FILE`. Стандартный `/models` может содержать только ID, capabilities/limits объявляет оператор.
 2. Укажите реальный image registry в `base/kustomization.yaml` и `migrations/kustomization.yaml`; используйте один **immutable digest** для Job, init containers, API и workers. При private registry добавьте `imagePullSecrets`. Пример сборки (выполняется оператором):
 
@@ -40,12 +85,29 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 6. `secrets.env.example` содержит только placeholders. Заполните приватный файл вне repo; используйте secret manager/External Secrets или создайте два Kubernetes Secret из файлов. `y-ai-secrets`: DATABASE_URL runtime + поля example; `y-ai-migration-secrets`: только DATABASE_URL роли migrator. Encryption/hash keys должны совпадать у всех replicas и сохраняться при обновлениях. Kubernetes Secret требует настроенного cluster encryption at rest и RBAC.
 
 ```sh
-kubectl create namespace y-ai  # при первой установке
-kubectl -n y-ai create secret generic y-ai-secrets --from-env-file=/secure/runtime.env
-kubectl -n y-ai create secret generic y-ai-migration-secrets --from-env-file=/secure/migration.env
+kubectl apply -f deploy/kubernetes/common/namespace.yaml
+kubectl -n y-ai create secret generic y-ai-secrets \
+  --from-env-file=.local/secrets/runtime.env --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n y-ai create secret generic y-ai-migration-secrets \
+  --from-env-file=.local/secrets/migration.env --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 7. В `base/ingress.yaml` задайте host/TLS secret/ingress class. Ingress публикует только `/v1`, `/auth/cli`, `/me`; `/admin`, `/metrics` и probes остаются внутренними. SSE buffering и автоматические upstream retries выключены, timeouts 150 s. Внешний LB также должен допускать длинные streams. Base NetworkPolicy допускает ingress из namespaces `ingress-nginx` и `monitoring`, DNS из `kube-system`, egress TCP 443/5432. Замените namespaces, DNS/NodeLocal DNS, DB port и добавьте CIDR/FQDN ограничения подходящего CNI; generic port allowlist не является доменным egress allowlist. TLS CA при необходимости монтируется read-only и задаётся `TLS_CA_BUNDLE`; одинаковые volume mounts нужны в API, worker и init.
+
+Полученный при push digest укажите одинаково в `base/kustomization.yaml` и `migrations/kustomization.yaml`: вместо `newTag` используйте `digest: sha256:REPLACE_WITH_IMAGE_DIGEST` и свой `newName`. `images` transformer заменит API, worker и init/migration images. Поддерживаемые платформы должны совпадать с node architectures. Включите private registry `imagePullSecrets` во все pod specs, если registry требует входа.
+
+TLS secret `y-ai-tls` (или ваше имя из Ingress) создаётся cert-manager либо из выпущенной пары файлов:
+
+```sh
+kubectl -n y-ai create secret tls y-ai-tls \
+  --cert=/secure/tls.crt --key=/secure/tls.key --dry-run=client -o yaml | kubectl apply -f -
+make kube-tools
+make kubernetes-check
+kubectl kustomize deploy/kubernetes/migrations > /tmp/y-ai-migrations.yaml
+kubectl kustomize deploy/kubernetes/base > /tmp/y-ai-base.yaml
+```
+
+Проверьте отрендеренные **публичные** manifests: URLs, digest, namespace, ingress/TLS и политики сети. Base не устанавливает PostgreSQL, Keycloak, ingress controller, cert-manager или monitoring stack. Не выполняйте `kubectl get secret -o yaml` для отчёта: base64 не является сокрытием ключа.
 
 ## Миграция и запуск
 
@@ -60,6 +122,21 @@ kubectl -n y-ai rollout status deployment/y-ai-gateway --timeout=600s
 kubectl -n y-ai rollout status deployment/y-ai-worker --timeout=600s
 ```
 
+После первого развёртывания проверьте:
+
+```sh
+kubectl -n y-ai get pods,deploy,job,svc,ingress,hpa
+kubectl -n y-ai port-forward service/y-ai-gateway 18001:8000
+# В другом терминале:
+curl --fail http://localhost:18001/health/live
+curl --fail http://localhost:18001/health/ready
+curl --fail http://localhost:18001/metrics
+```
+
+Probes/metrics намеренно недоступны через public Ingress. С внешнего клиента проверьте TLS и `/v1/models` без credentials (ожидается JSON 401, не HTML SSO redirect), затем установите оба плагина с **target** gateway/issuer из [инструкции](../../plugin/README.md) и пройдите [полный flow](../../docs/VALIDATION.md). Клиенту не передаются `.env`, Kubernetes Secret и server config.
+
+Для обновления inference/IdP/API admin secret отредактируйте приватный файл, повторите соответствующую команду `create ... --dry-run | apply` и выполните `kubectl -n y-ai rollout restart deployment/y-ai-gateway deployment/y-ai-worker`, затем `rollout status` и smoke. ConfigMap/image обновляются повторным `apply -k`. Encryption/hash keys при этом сохраняются.
+
 Init containers ждут Alembic 002 и не запускают новый API поверх старой schema. Не редактируйте уже выполненный Job: его pod template immutable. После успешной миграции при изменении ConfigMap/image удалите **завершённый** migration Job перед его новым применением; не прерывайте выполняющуюся миграцию. Следующие revisions получают новое имя Job и required schema в gate. ConfigMap hash автоматически меняет pod template; при ротации existing-name Secret выполните rollout restart. Health readiness проверяет DB/schema/IdP discovery, не оплачивает inference.
 
 `preStop` аутентифицированно переводит текущий pod в drain, readiness становится 503, новые admissions запрещаются, затем ждёт 5 s на обновление endpoints. Uvicorn получает до 170 s на завершение текущих streams, pod grace period 185 s при inference deadline 120 s и body read limit 10 s. PDB minAvailable 2 защищает voluntary disruption; actual ingress/node drain проверяется на вашем CNI/LB. Worker replicas координируются PostgreSQL advisory lock; API workers не запускают job loop.
@@ -73,3 +150,5 @@ Init containers ждут Alembic 002 и не запускают новый API �
 300 RPS круглосуточно — 25.92 млн usage records и до 51.84 млн audit rows в сутки. Измерьте фактические bytes/row/index/WAL на вашем payload и резервируйте storage. Архивирование/retention обязательно планируются до постоянной такой нагрузки. `gateway/scripts/prune_history.py --days 7` — dry-run; после внешнего архивирования можно явно добавить `--apply --batch 5000 --batches 10`. Удаляются только старые завершённые usage details и audit, lifetime counters и квоты сохраняются. Автоматическое удаление в base не включено. Daily counters и policy/credentials остаются; VACUUM/backup/архивирование настраивает оператор.
 
 Установка pinned schema validator в workspace с проверкой официального SHA256: `make kube-tools` (требует HTTPS к GitHub). Проверки без кластера: `make kubernetes-check`; нагрузка с local upstream/IdP и реальным PostgreSQL: `make load-test`. Эти результаты не заменяют target-cluster тест TLS, HPA, rollout, DNS, registry access и реального inference provider. Скрипты проверки никогда не выполняют kubectl apply.
+
+Официальные справочники: [Kubernetes Secrets из файлов](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/), [Kustomize](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/), [psql и интерактивная смена пароля](https://www.postgresql.org/docs/17/app-psql.html).

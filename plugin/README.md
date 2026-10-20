@@ -1,5 +1,24 @@
 # @company/kilo-auth
 
+## Установка из репозитория
+
+Для собственного локального стенда сначала выполните [запуск серверов](../docs/LOCAL_SETUP.md), затем из корня:
+
+```sh
+make plugin-build
+make install-kilo ENDPOINTS=config/endpoints/dev.env
+export PATH="$PWD/node_modules/.bin:$PATH"  # если используете workspace CLI
+kilo auth login --provider y.ai
+kilo models y.ai
+kilo run --model y.ai/qwen/qwen3.6-35b-a3b "Reply with exactly OK. Do not call tools."
+```
+
+Dev login — `developer`, пароль `DEV_USER_PASSWORD` из вашего приватного `.env`. Для target environment оператор экспортирует config командой `YAI_SECRETS_FILE=/secure/runtime.env make client-config ENDPOINTS=/path/to/public-target.env`, предварительно заполнив production endpoints template. Команда проверяет upstream catalog; секреты в полученный `artifacts/client/kilo.company.json` не попадают. Передайте пользователю только этот JSON и `make plugin-pack` tarball. `@company/kilo-auth` не опубликован в публичном npm registry: используйте tarball либо собственную публикацию.
+
+Для установки без Python создайте постоянную клиентскую директорию, выполните `npm init -y`, затем команды tarball ниже. Пакет и каталог установки нельзя удалять после регистрации: JSONC ссылается на его local module. Пользователю нужен Kilo CLI и Node.js ≥22; Python/Docker/серверные ключи не нужны. [Проверка login, streaming, tools и server revoke](../docs/VALIDATION.md).
+
+## Standalone package
+
 Auth plugin for Kilo CLI **7.8.14**, compiled against `@kilocode/plugin@7.8.14`.
 
 The provider display name is **Y.AI**; its provider ID is `y.ai`. The companion Keycloak theme includes the Y.AI logo and favicon. Custom provider SVG icons are not exposed by this Kilo provider config API.
@@ -39,7 +58,7 @@ Configure a local `file:///absolute/path/plugin/dist/index.js` entry, or an exac
 
 The package name above requires actual internal publication. Use the generated tarball and local file entry before publication. Configure the y.ai provider with `@ai-sdk/openai-compatible@2.0.48`, `/v1` baseURL and explicit validated model metadata. See the repository README/config generator.
 
-Register the plugin/provider in your normal global config once (repository helper: `make install-kilo`), then run `kilo auth login --provider y.ai`. Company SSO is selected automatically; `--method "Company SSO"` is optional. This exact command was verified on installed Kilo 7.8.15 in an isolated client profile, including model listing, both FAKE model responses and credential cleanup. The normal global config was migrated separately, leaving auth empty for manual login. It uses Device Flow, then exchanges only the Keycloak access token for a gateway API key. No client secret is used. No Keycloak token or provider credential is persisted. Gateway key expiry requires re-login.
+Register the plugin/provider in your normal global config once (repository helper: `make install-kilo`), then run `kilo auth login --provider y.ai`. Company SSO is selected automatically; `--method "Company SSO"` is optional. This exact command was verified on installed Kilo 7.8.15 in an isolated client profile, including model listing, both FAKE model responses and credential cleanup. It uses Device Flow, then exchanges only the Keycloak access token for a gateway API key. No client secret is used. No Keycloak token or provider credential is persisted. Gateway key expiry requires re-login.
 
 Optional `dev: true` permits HTTP on loopback only. The verification URL opens automatically in the default browser; `openBrowser: false` disables this for SSH/headless use. Browser startup is best-effort and never blocks Device Flow; the URL and public user code remain visible for manual entry. Ctrl+C cancels polling; polling observes pending, slow_down, expiry, denial and bounded network failures.
 
